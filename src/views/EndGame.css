@@ -1,0 +1,67 @@
+.endgame-title {
+  margin-bottom: var(--sp-xs);
+}
+
+.endgame-players {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-lg);
+}
+
+.endgame-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  padding: var(--sp-md);
+}
+
+.endgame-player-info {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.endgame-input {
+  width: 100px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Validation card */
+.endgame-validation {
+  padding: var(--sp-md);
+  transition: border-color var(--duration-normal);
+}
+
+.endgame-validation.valid {
+  border-color: rgba(46, 204, 113, 0.4);
+}
+
+.endgame-validation.invalid {
+  border-color: rgba(231, 76, 60, 0.4);
+}
+
+.validation-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sp-xs) 0;
+  font-size: 0.9rem;
+}
+
+.validation-value {
+  font-weight: 600;
+}
+
+.validation-status {
+  text-align: center;
+  padding-top: var(--sp-sm);
+  margin-top: var(--sp-sm);
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 0.95rem;
+}

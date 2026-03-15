@@ -1,0 +1,81 @@
+.player-entry-header {
+  margin-bottom: var(--sp-lg);
+}
+
+.player-entry-header h2 {
+  margin-bottom: var(--sp-xs);
+}
+
+.add-player-row {
+  display: flex;
+  gap: var(--sp-sm);
+}
+
+.add-player-row .input {
+  flex: 1;
+}
+
+.entry-error {
+  color: var(--red-light);
+  font-size: 0.82rem;
+  margin-top: var(--sp-xs);
+}
+
+.player-count {
+  font-size: 0.8rem;
+  margin-top: var(--sp-sm);
+  margin-bottom: var(--sp-md);
+}
+
+/* Player cards in entry */
+.player-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+.entry-player-card {
+  padding: var(--sp-md);
+}
+
+.entry-player-main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+.entry-player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-player-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.entry-advanced {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  margin-top: var(--sp-md);
+  padding-top: var(--sp-md);
+  border-top: 1px solid var(--border);
+}
+
+.entry-advanced label {
+  font-size: 0.82rem;
+}
+
+.buyin-stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.buyin-count {
+  font-weight: 700;
+  font-size: 1.1rem;
+  min-width: 24px;
+  text-align: center;
+}

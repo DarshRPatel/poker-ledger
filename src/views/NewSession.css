@@ -1,0 +1,57 @@
+.setup-header {
+  text-align: center;
+  padding: var(--sp-lg) 0;
+}
+
+.setup-icon {
+  font-size: 3rem;
+  margin-bottom: var(--sp-sm);
+}
+
+.setup-header h1 {
+  margin-bottom: var(--sp-xs);
+}
+
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+  margin-top: var(--sp-lg);
+}
+
+/* Ratio Card */
+.ratio-card {
+  text-align: center;
+  padding: var(--sp-lg);
+  margin-top: var(--sp-lg);
+  border: 1px solid var(--border-accent);
+}
+
+.ratio-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: var(--sp-sm);
+}
+
+.ratio-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+}
+
+.ratio-eq {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.ratio-reverse {
+  margin-top: var(--sp-sm);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}

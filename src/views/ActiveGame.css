@@ -1,0 +1,87 @@
+.game-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) 0;
+  margin-bottom: var(--sp-md);
+}
+
+.timer-icon {
+  font-size: 1.1rem;
+}
+
+.timer-value {
+  font-family: 'Inter', monospace;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+/* Player cards in game */
+.game-players {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+.game-player-card {
+  padding: var(--sp-md);
+}
+
+.game-player-main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+.game-player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Add player form */
+.add-player-form {
+  padding: var(--sp-lg);
+}
+
+.add-player-form h3 {
+  margin-bottom: var(--sp-md);
+}
+
+.add-player-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.buyin-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+.buyin-picker label {
+  font-size: 0.85rem;
+}
+
+.buyin-stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.buyin-count {
+  font-weight: 700;
+  font-size: 1.1rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.add-player-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+}
