@@ -10,9 +10,8 @@ const initialState = {
 
 function gameReducer(state, action) {
   switch (action.type) {
-    case 'INIT_SESSION': {
-      const session = createNewSession(action.payload);
-      return { ...state, session, step: 'players' };
+    case 'INIT_SESSION_SUCCESS': {
+      return { ...state, session: action.payload, step: 'players' };
     }
 
     case 'SET_STEP': {
@@ -189,10 +188,12 @@ function recalcPot(players, session) {
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  const initSession = useCallback(
-    (config) => dispatch({ type: 'INIT_SESSION', payload: config }),
-    []
-  );
+  const initSession = useCallback(async (config) => {
+    // 1. Await the DB creation
+    const session = await createNewSession(config);
+    // 2. Dispatch the created session to local state
+    dispatch({ type: 'INIT_SESSION_SUCCESS', payload: session });
+  }, []);
 
   const setStep = useCallback(
     (step) => dispatch({ type: 'SET_STEP', payload: step }),

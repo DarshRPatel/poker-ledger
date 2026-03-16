@@ -27,9 +27,10 @@ export default function SessionResults() {
   const [customDuration, setCustomDuration] = useState(false);
   const [customHrs, setCustomHrs] = useState('');
   const [customMins, setCustomMins] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  if (!session) {
-    navigate('/');
+  if (!saved && (!session || session.status !== 'completed')) {
+    navigate('/new');
     return null;
   }
 
@@ -54,15 +55,22 @@ export default function SessionResults() {
     return `${h} hr ${m} min`;
   };
 
-  const handleSave = () => {
-    saveSession(session);
+  const handleSave = async () => {
+    setIsSaving(true);
+    const finalSession = {
+      ...session,
+      settlements
+    };
+    
+    await saveSession(finalSession);
     setSaved(true);
+    setIsSaving(false);
+    
     setTimeout(() => {
-      reset();
-      navigate('/');
-    }, 1200);
+      reset(); // Clear context and localStorage
+      navigate('/', { replace: true });
+    }, 1500); // 1.5s delay to show the success state
   };
-
   const handleDurationSelect = (e) => {
     const val = e.target.value;
     if (val === 'custom') {
@@ -253,7 +261,7 @@ export default function SessionResults() {
           <button
             className="btn btn-secondary btn-lg btn-full"
             onClick={handleBackToGame}
-            disabled={saved}
+            disabled={saved || isSaving} // Disable if saving is in progress
             id="btn-back-to-game"
           >
             ← Back to Game
@@ -261,7 +269,7 @@ export default function SessionResults() {
           <button
             className={`btn btn-lg btn-full ${saved ? 'btn-saved' : 'btn-primary'}`}
             onClick={handleSave}
-            disabled={saved}
+            disabled={saved || isSaving} // Disable if already saved or currently saving
             id="btn-save-session"
           >
             {saved ? '✓ Session Saved!' : '💾 Save Session'}

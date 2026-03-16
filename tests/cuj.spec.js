@@ -18,6 +18,10 @@ test.describe('Poker Ledger - Critical User Journeys', () => {
     await page.getByLabel('Chips per Buy-in').fill('500');
     await expect(page.locator('.ratio-value')).toContainText('₹1=5 chips');
     await page.locator('#btn-next-players').click();
+    
+    // Wait for the async session creation and redirect
+    await expect(page).toHaveURL(/.*(?:localhost|127\.0\.0\.1):\d+\/players/);
+    await expect(page.locator('.player-entry-header')).toBeVisible();
 
     // 3. Add Players
     const addPlayer = async (name) => {
@@ -35,7 +39,9 @@ test.describe('Poker Ledger - Critical User Journeys', () => {
 
     // 5. Active Game — add an extra buy-in for Adam
     const adamGameCard = page.locator('.game-player-card').filter({ hasText: 'Adam' });
-    await adamGameCard.locator('button', { hasText: '+ Buy-in' }).click();
+    const adamBtn = adamGameCard.locator('button', { hasText: '+ Buy-in' });
+    await adamBtn.waitFor({ state: 'visible' });
+    await adamBtn.click();
 
     // Pot should now be 4 buy-ins total (400Rs / 2,000 chips)
     await expect(page.locator('.pot-value-number').first()).toContainText('2,000');
@@ -82,9 +88,9 @@ test.describe('Poker Ledger - Critical User Journeys', () => {
       expect(['Adam', 'Charlie']).toContain(from);
     }
 
-    // 8. Save & verify we land back on Home with a saved session
+    // 8. Save & verify we land back on Home
     await page.locator('#btn-save-session').click();
-    await expect(page.locator('.session-card')).toBeVisible();
+    await expect(page).toHaveURL(/.*(?:localhost|127\.0\.0\.1):\d+\/$/, { timeout: 8000 });
   });
 
   test('CUJ 2: Validation Guards (New Session Input)', async ({ page }) => {

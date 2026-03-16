@@ -10,21 +10,34 @@ export default function Home() {
   const [sessions, setSessions] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [sessionToDelete, setSessionToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setSessions(getSessions());
-    setLeaderboard(getLeaderboard());
+    async function loadData() {
+      const [sessionsData, leaderboardData] = await Promise.all([
+        getSessions(),
+        getLeaderboard()
+      ]);
+      setSessions(sessionsData);
+      setLeaderboard(leaderboardData);
+      setIsLoading(false);
+    }
+    loadData();
   }, []);
 
   const requestDelete = (id) => {
     setSessionToDelete(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (sessionToDelete) {
-      deleteSession(sessionToDelete);
-      setSessions(getSessions());
-      setLeaderboard(getLeaderboard());
+      await deleteSession(sessionToDelete);
+      const [sessionsData, leaderboardData] = await Promise.all([
+        getSessions(),
+        getLeaderboard()
+      ]);
+      setSessions(sessionsData);
+      setLeaderboard(leaderboardData);
       setSessionToDelete(null);
     }
   };
@@ -54,9 +67,14 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <div className="page">
-        {/* Hero CTA */}
-        <div className="home-hero animate-fade-in-up">
+      {isLoading ? (
+        <div className="page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+          <div className="text-secondary">Loading ledger data...</div>
+        </div>
+      ) : (
+        <div className="page">
+          {/* Hero CTA */}
+          <div className="home-hero animate-fade-in-up">
           <div className="hero-suits">
             <span className="suit-accent suit-spade">♠</span>
             <span className="suit-accent suit-heart">♥</span>
@@ -167,6 +185,7 @@ export default function Home() {
           )}
         </section>
       </div>
+      )}
 
       <ConfirmModal
         isOpen={!!sessionToDelete}

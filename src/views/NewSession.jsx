@@ -9,6 +9,7 @@ export default function NewSession() {
   const { initSession } = useGame();
   const [buyInAmount, setBuyInAmount] = useState('');
   const [chipsPerBuyIn, setChipsPerBuyIn] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const amount = parseFloat(buyInAmount) || 0;
   const chips = parseFloat(chipsPerBuyIn) || 0;
@@ -18,8 +19,10 @@ export default function NewSession() {
   const isAmountInvalid = buyInAmount !== '' && amount < 1;
   const isChipsInvalid = chipsPerBuyIn !== '' && chips < 1;
 
-  const handleNext = () => {
-    initSession({ buyInAmount: amount, chipsPerBuyIn: chips });
+  const handleNext = async () => {
+    setIsLoading(true);
+    await initSession({ buyInAmount: amount, chipsPerBuyIn: chips });
+    setIsLoading(false);
     navigate('/players');
   };
 
@@ -81,15 +84,16 @@ export default function NewSession() {
           </div>
         )}
 
-        <button
-          className="btn btn-primary btn-lg btn-full mt-lg animate-fade-in-up"
-          style={{ animationDelay: '300ms' }}
-          disabled={!isValid}
-          onClick={handleNext}
-          id="btn-next-players"
-        >
-          Next → Add Players
-        </button>
+        <div className="setup-actions animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          <button
+            className="btn btn-primary btn-lg btn-full mt-md"
+            onClick={handleNext}
+            disabled={!isValid || isAmountInvalid || isChipsInvalid || isLoading}
+            id="btn-next-players"
+          >
+            {isLoading ? 'Creating Session...' : 'Next: Add Players →'}
+          </button>
+        </div>
       </div>
     </>
   );

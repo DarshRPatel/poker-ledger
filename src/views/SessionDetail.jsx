@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { getSession } from '../services/storage';
 import { calculateSettlements } from '../utils/settlement';
 import Navbar from '../components/Navbar';
@@ -7,7 +8,28 @@ import './SessionResults.css';
 export default function SessionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const session = getSession(id);
+  const [session, setSession] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSession() {
+      const data = await getSession(id);
+      setSession(data);
+      setIsLoading(false);
+    }
+    fetchSession();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <>
+        <Navbar title="Loading..." />
+        <div className="page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+          <div className="text-secondary">Loading session data...</div>
+        </div>
+      </>
+    );
+  }
 
   if (!session) {
     return (

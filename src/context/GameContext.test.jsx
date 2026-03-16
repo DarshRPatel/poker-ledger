@@ -4,14 +4,14 @@ import { GameProvider, useGame } from './GameContext';
 
 // Mock storage
 vi.mock('../services/storage', () => ({
-  createSession: (payload) => ({
+  createSession: async (payload) => ({
     id: 'mock_session_id',
     sessionNumber: 1,
     startTime: new Date().toISOString(),
     players: [],
-    buyInAmount: payload.amount,
-    chipsPerBuyIn: payload.chips,
-    ratio: payload.ratio,
+    buyInAmount: payload.buyInAmount,
+    chipsPerBuyIn: payload.chipsPerBuyIn,
+    ratio: payload.chipsPerBuyIn / payload.buyInAmount,
     totalPotChips: 0,
     totalPotRS: 0,
     status: 'active'
@@ -27,7 +27,7 @@ describe('GameContext Hook & Provider', () => {
     expect(result.current.session).toBeNull();
   });
 
-  it('handles full game flow: init -> add players -> add buyins -> end -> calc results', () => {
+  it('handles full game flow: init -> add players -> add buyins -> end -> calc results', async () => {
     // 1. Setup the time mock for duration calculation
     const mockNowMs = Date.now();
     const mockStartTime = new Date(mockNowMs - 60000 * 120).toISOString(); // exactly 120 mins ago
@@ -46,11 +46,11 @@ describe('GameContext Hook & Provider', () => {
     global.Date = MockDate;
 
     // 2. Render Hook
-    const { result } = renderHook(() => useGame(), { wrapper });
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
 
-    // 3. Init Session
-    act(() => {
-      result.current.initSession({ amount: 100, chips: 500, ratio: 5 });
+    // 3. Init Session (Now Async)
+    await act(async () => {
+      await result.current.initSession({ buyInAmount: 100, chipsPerBuyIn: 500 });
     });
     
     expect(result.current.step).toBe('players');
