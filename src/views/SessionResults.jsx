@@ -218,7 +218,7 @@ export default function SessionResults() {
                   <span className="lb-col-in text-secondary">₹{buyInRS}</span>
                   <span className="lb-col-out">₹{outRS}</span>
                   <span className={`lb-col-net ${net >= 0 ? 'profit' : 'loss'}`}>
-                    {net >= 0 ? '+' : ''}₹{Math.round(net)}
+                    {net >= 0 ? '+' : '-'}₹{Math.abs(Math.round(net))}
                   </span>
                 </div>
               );
