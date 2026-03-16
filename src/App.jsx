@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { GameProvider } from './context/GameContext';
+import GlobalToastHelper from './components/GlobalToastHelper';
 import Home from './views/Home';
 import NewSession from './views/NewSession';
 import PlayerEntry from './views/PlayerEntry';
@@ -12,6 +13,7 @@ import SessionDetail from './views/SessionDetail';
 export default function App() {
   return (
     <BrowserRouter>
+      <GlobalToastHelper />
       <GameProvider>
         <Routes>
           <Route path="/" element={<Home />} />

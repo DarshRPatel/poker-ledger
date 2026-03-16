@@ -12,7 +12,7 @@ export default function PlayerEntry() {
   const [error, setError] = useState('');
 
   if (!session) {
-    navigate('/new');
+    navigate('/new', { state: { toastMessage: 'No active session — start a new one' } });
     return null;
   }
 

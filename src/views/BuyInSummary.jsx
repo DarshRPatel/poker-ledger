@@ -9,7 +9,7 @@ export default function BuyInSummary() {
   const { session, setStep } = useGame();
 
   if (!session) {
-    navigate('/new');
+    navigate('/new', { state: { toastMessage: 'No active session — start a new one' } });
     return null;
   }
 

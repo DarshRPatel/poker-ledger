@@ -33,7 +33,7 @@ export default function ActiveGame() {
   }, [session]);
 
   if (!session) {
-    navigate('/new');
+    navigate('/new', { state: { toastMessage: 'No active session — start a new one' } });
     return null;
   }
 
