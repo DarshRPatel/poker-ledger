@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getSession } from '../services/storage';
 import { calculateSettlements } from '../utils/settlement';
 import Navbar from '../components/Navbar';
+import { useLiveSync } from '../hooks/useLiveSync';
 import './SessionResults.css';
 
 export default function SessionDetail() {
@@ -11,14 +12,18 @@ export default function SessionDetail() {
   const [session, setSession] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchSession() {
-      const data = await getSession(id);
-      setSession(data);
-      setIsLoading(false);
-    }
-    fetchSession();
+  const fetchSession = useCallback(async () => {
+    const data = await getSession(id);
+    setSession(data);
+    setIsLoading(false);
   }, [id]);
+
+  useEffect(() => {
+    fetchSession();
+  }, [fetchSession]);
+
+  // Subscribe to real-time events to see live pot updates if the game is active elsewhere
+  useLiveSync(['sessions', 'players', 'settlements'], fetchSession, [fetchSession]);
 
   if (isLoading) {
     return (

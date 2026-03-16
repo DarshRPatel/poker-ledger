@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { getSessions, getLeaderboard, deleteSession } from '../services/storage';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import ConfirmModal from '../components/ConfirmModal';
+import { useLiveSync } from '../hooks/useLiveSync';
 import './Home.css';
 
 export default function Home() {
@@ -12,18 +13,22 @@ export default function Home() {
   const [sessionToDelete, setSessionToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadData() {
-      const [sessionsData, leaderboardData] = await Promise.all([
-        getSessions(),
-        getLeaderboard()
-      ]);
-      setSessions(sessionsData);
-      setLeaderboard(leaderboardData);
-      setIsLoading(false);
-    }
-    loadData();
+  const loadData = useCallback(async () => {
+    const [sessionsData, leaderboardData] = await Promise.all([
+      getSessions(),
+      getLeaderboard()
+    ]);
+    setSessions(sessionsData);
+    setLeaderboard(leaderboardData);
+    setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Subscribe to realtime database changes so other devices see instant updates
+  useLiveSync(['sessions', 'players', 'settlements'], loadData, [loadData]);
 
   const requestDelete = (id) => {
     setSessionToDelete(id);
