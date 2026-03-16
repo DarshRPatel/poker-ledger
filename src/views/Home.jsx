@@ -2,24 +2,35 @@ import { useNavigate } from 'react-router-dom';
 import { getSessions, getLeaderboard, deleteSession } from '../services/storage';
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import ConfirmModal from '../components/ConfirmModal';
 import './Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [sessionToDelete, setSessionToDelete] = useState(null);
 
   useEffect(() => {
     setSessions(getSessions());
     setLeaderboard(getLeaderboard());
   }, []);
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this session permanently?')) {
-      deleteSession(id);
+  const requestDelete = (id) => {
+    setSessionToDelete(id);
+  };
+
+  const confirmDelete = () => {
+    if (sessionToDelete) {
+      deleteSession(sessionToDelete);
       setSessions(getSessions());
       setLeaderboard(getLeaderboard());
+      setSessionToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setSessionToDelete(null);
   };
 
   const formatDate = (iso) => {
@@ -143,7 +154,7 @@ export default function Home() {
                       className="btn btn-ghost btn-sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(s.id);
+                        requestDelete(s.id);
                       }}
                       title="Delete session"
                     >
@@ -156,6 +167,14 @@ export default function Home() {
           )}
         </section>
       </div>
+
+      <ConfirmModal
+        isOpen={!!sessionToDelete}
+        title="Delete Session?"
+        message="Are you sure you want to permanently delete this session? This will remove all associated P&L data from the leaderboard. This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </>
   );
 }
