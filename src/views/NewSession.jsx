@@ -13,7 +13,10 @@ export default function NewSession() {
   const amount = parseFloat(buyInAmount) || 0;
   const chips = parseFloat(chipsPerBuyIn) || 0;
   const ratio = amount > 0 ? chips / amount : 0;
-  const isValid = amount > 0 && chips > 0;
+  const isValid = amount >= 1 && chips >= 1;
+
+  const isAmountInvalid = buyInAmount !== '' && amount < 1;
+  const isChipsInvalid = chipsPerBuyIn !== '' && chips < 1;
 
   const handleNext = () => {
     initSession({ buyInAmount: amount, chipsPerBuyIn: chips });
@@ -42,7 +45,9 @@ export default function NewSession() {
               value={buyInAmount}
               onChange={(e) => setBuyInAmount(e.target.value)}
               autoFocus
+              min="1"
             />
+            {isAmountInvalid && <span className="error-text text-sm mt-sm text-red">Buy-in must be at least ₹1</span>}
           </div>
 
           <div className="input-group">
@@ -55,7 +60,9 @@ export default function NewSession() {
               placeholder="e.g. 500"
               value={chipsPerBuyIn}
               onChange={(e) => setChipsPerBuyIn(e.target.value)}
+              min="1"
             />
+            {isChipsInvalid && <span className="error-text text-sm mt-sm text-red">Chips must be at least 1</span>}
           </div>
         </div>
 

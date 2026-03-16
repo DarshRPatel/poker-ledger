@@ -86,4 +86,30 @@ test.describe('Poker Ledger - Critical User Journeys', () => {
     await page.locator('#btn-save-session').click();
     await expect(page.locator('.session-card')).toBeVisible();
   });
+
+  test('CUJ 2: Validation Guards (New Session Input)', async ({ page }) => {
+    // 1. Navigate to New Session
+    await page.goto('/new');
+
+    // 2. Submit Empty (Should be disabled)
+    const nextBtn = page.locator('#btn-next-players');
+    await expect(nextBtn).toBeDisabled();
+
+    // 3. Submit 0 values (Should show error & stay disabled)
+    await page.getByLabel('Buy-in Amount (₹)').fill('0');
+    await page.getByLabel('Chips per Buy-in').fill('-50');
+    
+    await expect(page.getByText('Buy-in must be at least ₹1')).toBeVisible();
+    await expect(page.getByText('Chips must be at least 1')).toBeVisible();
+    await expect(nextBtn).toBeDisabled();
+
+    // 4. Correct values
+    await page.getByLabel('Buy-in Amount (₹)').fill('100');
+    await page.getByLabel('Chips per Buy-in').fill('1000');
+    
+    await expect(page.getByText('Buy-in must be at least ₹1')).toBeHidden();
+    await expect(page.getByText('Chips must be at least 1')).toBeHidden();
+    await expect(nextBtn).toBeEnabled();
+  });
 });
+
