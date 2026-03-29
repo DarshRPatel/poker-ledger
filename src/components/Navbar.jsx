@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
-export default function Navbar({ title, showBack = true }) {
+export default function Navbar({ title, showBack = true, onBack }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isHome = location.pathname === '/';
@@ -12,7 +12,7 @@ export default function Navbar({ title, showBack = true }) {
         {showBack && !isHome ? (
           <button
             className="navbar-back btn-ghost"
-            onClick={() => navigate(-1)}
+            onClick={() => (onBack ? onBack() : navigate(-1))}
             aria-label="Go back"
           >
             ← Back
