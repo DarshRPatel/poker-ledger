@@ -33,9 +33,8 @@ test.describe('Poker Ledger - Critical User Journeys', () => {
     await expect(page.locator('.summary-row.footer .col-chips')).toContainText('1,500');
     await page.locator('#btn-start-game').click();
 
-    // 5. Active Game — add an extra buy-in for Adam
-    const adamGameCard = page.locator('.game-player-card').filter({ hasText: 'Adam' });
-    await adamGameCard.locator('button', { hasText: '+ Buy-in' }).click();
+    // 5. Active Game — add an extra buy-in for Adam (player index 0)
+    await page.locator('#btn-add-buyin-0').click();
 
     // Pot should now be 4 buy-ins total (400Rs / 2,000 chips)
     await expect(page.locator('.pot-value-number').first()).toContainText('2,000');
@@ -110,6 +109,105 @@ test.describe('Poker Ledger - Critical User Journeys', () => {
     await expect(page.getByText('Buy-in must be at least ₹1')).toBeHidden();
     await expect(page.getByText('Chips must be at least 1')).toBeHidden();
     await expect(nextBtn).toBeEnabled();
+  });
+
+  // --- Shared helper: quickly start a 3-player game ---
+  async function startGameWith3Players(page) {
+    await page.locator('#btn-new-session').click();
+    await page.getByLabel('Buy-in Amount (₹)').fill('100');
+    await page.getByLabel('Chips per Buy-in').fill('500');
+    await page.locator('#btn-next-players').click();
+    for (const name of ['Adam', 'Bob', 'Charlie']) {
+      await page.getByPlaceholder('Player name').fill(name);
+      await page.locator('#btn-add-player').click();
+    }
+    await page.locator('#btn-review-summary').click();
+    await page.locator('#btn-start-game').click();
+    await expect(page.locator('.navbar-title')).toContainText('Game in Progress');
+  }
+
+  test('CUJ 3: Buy-in Stepper — Add, Remove & Direct Edit', async ({ page }) => {
+    await startGameWith3Players(page);
+
+    // Adam starts with 1 buy-in
+    const adamCard = page.locator('.game-player-card').filter({ hasText: 'Adam' });
+    await expect(adamCard.locator('#btn-buyin-count-0')).toContainText('1');
+
+    // 1. Add a buy-in via + button
+    await page.locator('#btn-add-buyin-0').click();
+    await expect(adamCard.locator('#btn-buyin-count-0')).toContainText('2');
+
+    // 2. Remove a buy-in via − button
+    await page.locator('#btn-remove-buyin-0').click();
+    await expect(adamCard.locator('#btn-buyin-count-0')).toContainText('1');
+
+    // 3. − button should be disabled at 1
+    await expect(page.locator('#btn-remove-buyin-0')).toBeDisabled();
+
+    // 4. Direct edit: click count, type 5, press Enter
+    await page.locator('#btn-buyin-count-0').click();
+    const editInput = page.locator('#buyin-edit-input-0');
+    await expect(editInput).toBeVisible();
+    await editInput.fill('5');
+    await editInput.press('Enter');
+
+    // Count should now be 5
+    await expect(adamCard.locator('#btn-buyin-count-0')).toContainText('5');
+    // Pot should update: Adam 5 + Bob 1 + Charlie 1 = 7 buy-ins = 3500 chips
+    await expect(page.locator('.pot-value-number').first()).toContainText('3,500');
+  });
+
+  test('CUJ 4: EndGame Back Button → Game in Progress', async ({ page }) => {
+    await startGameWith3Players(page);
+
+    // Navigate to End Game
+    await page.locator('#btn-end-game').click();
+    await expect(page.locator('.navbar-title')).toContainText('End Game');
+
+    // Click Back — should go to Game in Progress, NOT summary
+    await page.locator('.navbar-back').click();
+    await expect(page.locator('.navbar-title')).toContainText('Game in Progress');
+    // Verify the game timer is still visible (confirms we're on ActiveGame)
+    await expect(page.locator('.timer-value')).toBeVisible();
+  });
+
+  test('CUJ 5: Early Cash Out with Persistence & EndGame Pre-fill', async ({ page }) => {
+    await startGameWith3Players(page);
+
+    // 1. Cash out Bob (player index 1) with 200 chips
+    await page.locator('#btn-cashout-1').click();
+    const exitInput = page.locator('#input-exit-chips-1');
+    await expect(exitInput).toBeVisible();
+    await exitInput.fill('200');
+    await page.locator('#btn-confirm-cashout-1').click();
+
+    // 2. Verify Bob shows CASHED OUT badge
+    const bobCard = page.locator('.game-player-card').filter({ hasText: 'Bob' });
+    await expect(bobCard.locator('.cashed-out-badge')).toContainText('CASHED OUT');
+
+    // 3. Verify Bob's buy-in stepper is hidden (no + button visible in his card)
+    await expect(bobCard.locator('#btn-add-buyin-1')).not.toBeVisible();
+
+    // 4. Verify Undo button is visible
+    await expect(bobCard.locator('#btn-undo-cashout-1')).toBeVisible();
+
+    // 5. Navigate to EndGame and verify pre-fill
+    await page.locator('#btn-end-game').click();
+    const bobChipInput = page.locator('#input-chips-1');
+    await expect(bobChipInput).toHaveValue('200');
+    // Verify pre-filled label
+    await expect(page.locator('.prefilled-label').first()).toContainText('(pre-filled)');
+
+    // 6. Go back and verify persistence (Bob still cashed out)
+    await page.locator('.navbar-back').click();
+    await expect(page.locator('.navbar-title')).toContainText('Game in Progress');
+    await expect(bobCard.locator('.cashed-out-badge')).toContainText('CASHED OUT');
+
+    // 7. Test Undo cash-out
+    await bobCard.locator('#btn-undo-cashout-1').click();
+    await expect(bobCard.locator('.cashed-out-badge')).not.toBeVisible();
+    // Stepper should be back
+    await expect(bobCard.locator('#btn-add-buyin-1')).toBeVisible();
   });
 });
 
