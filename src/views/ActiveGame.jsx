@@ -127,8 +127,12 @@ export default function ActiveGame() {
       setCashoutError('Chips must be a whole number');
       return;
     }
-    if (parsed > session.totalPotChips) {
-      setCashoutError(`Cannot exceed pot (${session.totalPotChips.toLocaleString()} chips)`);
+    const alreadyCashedOut = session.players.reduce((sum, p, i) =>
+      i !== index && p.exitChips != null ? sum + p.exitChips : sum, 0
+    );
+    const remaining = session.totalPotChips - alreadyCashedOut;
+    if (parsed > remaining) {
+      setCashoutError(`Exceeds available chips (${remaining.toLocaleString()} remaining)`);
       return;
     }
     setCashoutError('');

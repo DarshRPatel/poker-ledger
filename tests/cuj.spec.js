@@ -225,21 +225,36 @@ test.describe('Poker Ledger - Critical User Journeys', () => {
     await exitInput.fill('-100');
     await page.locator('#btn-confirm-cashout-0').click();
     await expect(errorEl).toContainText('Chips cannot be negative');
-    // Player should NOT be cashed out
     const adamCard = page.locator('.game-player-card').filter({ hasText: 'Adam' });
     await expect(adamCard.locator('.cashed-out-badge')).not.toBeVisible();
 
-    // --- Test overflow (chips > pot) ---
+    // --- Test individual overflow (chips > pot) ---
     await exitInput.fill('9999');
     await page.locator('#btn-confirm-cashout-0').click();
-    await expect(errorEl).toContainText('Cannot exceed pot');
+    await expect(errorEl).toContainText('Exceeds available chips');
     await expect(adamCard.locator('.cashed-out-badge')).not.toBeVisible();
 
-    // --- Test valid edge case: 0 chips (bust out) ---
-    await exitInput.fill('0');
+    // --- Test valid: cash out Adam with 1000 chips ---
+    await exitInput.fill('1000');
     await page.locator('#btn-confirm-cashout-0').click();
     await expect(errorEl).not.toBeVisible();
     await expect(adamCard.locator('.cashed-out-badge')).toContainText('CASHED OUT');
+
+    // --- Test cumulative overflow: Bob tries 600 (1000 + 600 > 1500) ---
+    await page.locator('#btn-cashout-1').click();
+    const bobExitInput = page.locator('#input-exit-chips-1');
+    await bobExitInput.fill('600');
+    await page.locator('#btn-confirm-cashout-1').click();
+    await expect(errorEl).toContainText('Exceeds available chips');
+    await expect(errorEl).toContainText('500 remaining');
+    const bobCard = page.locator('.game-player-card').filter({ hasText: 'Bob' });
+    await expect(bobCard.locator('.cashed-out-badge')).not.toBeVisible();
+
+    // --- Test valid remaining: Bob cashes out with exactly 500 ---
+    await bobExitInput.fill('500');
+    await page.locator('#btn-confirm-cashout-1').click();
+    await expect(errorEl).not.toBeVisible();
+    await expect(bobCard.locator('.cashed-out-badge')).toContainText('CASHED OUT');
   });
 });
 
