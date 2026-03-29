@@ -181,33 +181,65 @@ test.describe('Poker Ledger - Critical User Journeys', () => {
     await exitInput.fill('200');
     await page.locator('#btn-confirm-cashout-1').click();
 
-    // 2. Verify Bob shows CASHED OUT badge
+    // 2. Verify no validation error shown on valid input
+    await expect(page.locator('#cashout-error')).not.toBeVisible();
+
+    // 3. Verify Bob shows CASHED OUT badge
     const bobCard = page.locator('.game-player-card').filter({ hasText: 'Bob' });
     await expect(bobCard.locator('.cashed-out-badge')).toContainText('CASHED OUT');
 
-    // 3. Verify Bob's buy-in stepper is hidden (no + button visible in his card)
+    // 4. Verify Bob's buy-in stepper is hidden (no + button visible in his card)
     await expect(bobCard.locator('#btn-add-buyin-1')).not.toBeVisible();
 
-    // 4. Verify Undo button is visible
+    // 5. Verify Undo button is visible
     await expect(bobCard.locator('#btn-undo-cashout-1')).toBeVisible();
 
-    // 5. Navigate to EndGame and verify pre-fill
+    // 6. Navigate to EndGame and verify pre-fill
     await page.locator('#btn-end-game').click();
     const bobChipInput = page.locator('#input-chips-1');
     await expect(bobChipInput).toHaveValue('200');
     // Verify pre-filled label
     await expect(page.locator('.prefilled-label').first()).toContainText('(pre-filled)');
 
-    // 6. Go back and verify persistence (Bob still cashed out)
+    // 7. Go back and verify persistence (Bob still cashed out)
     await page.locator('.navbar-back').click();
     await expect(page.locator('.navbar-title')).toContainText('Game in Progress');
     await expect(bobCard.locator('.cashed-out-badge')).toContainText('CASHED OUT');
 
-    // 7. Test Undo cash-out
+    // 8. Test Undo cash-out
     await bobCard.locator('#btn-undo-cashout-1').click();
     await expect(bobCard.locator('.cashed-out-badge')).not.toBeVisible();
     // Stepper should be back
     await expect(bobCard.locator('#btn-add-buyin-1')).toBeVisible();
+  });
+
+  test('CUJ 6: Cash-Out Validation Guards', async ({ page }) => {
+    await startGameWith3Players(page);
+    // Pot = 3 players × 500 chips = 1,500 chips
+
+    const errorEl = page.locator('#cashout-error');
+
+    // --- Test negative chips ---
+    await page.locator('#btn-cashout-0').click();
+    const exitInput = page.locator('#input-exit-chips-0');
+    await exitInput.fill('-100');
+    await page.locator('#btn-confirm-cashout-0').click();
+    await expect(errorEl).toContainText('Chips cannot be negative');
+    // Player should NOT be cashed out
+    const adamCard = page.locator('.game-player-card').filter({ hasText: 'Adam' });
+    await expect(adamCard.locator('.cashed-out-badge')).not.toBeVisible();
+
+    // --- Test overflow (chips > pot) ---
+    await exitInput.fill('9999');
+    await page.locator('#btn-confirm-cashout-0').click();
+    await expect(errorEl).toContainText('Cannot exceed pot');
+    await expect(adamCard.locator('.cashed-out-badge')).not.toBeVisible();
+
+    // --- Test valid edge case: 0 chips (bust out) ---
+    await exitInput.fill('0');
+    await page.locator('#btn-confirm-cashout-0').click();
+    await expect(errorEl).not.toBeVisible();
+    await expect(adamCard.locator('.cashed-out-badge')).toContainText('CASHED OUT');
   });
 });
 
