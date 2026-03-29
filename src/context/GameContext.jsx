@@ -96,7 +96,28 @@ function gameReducer(state, action) {
       const s = state.session;
       const players = s.players.map((p, i) => {
         if (i !== index) return p;
-        const newBuyIns = p.buyIns + (count || 1);
+        const newBuyIns = Math.max(1, p.buyIns + (count || 1));
+        return {
+          ...p,
+          buyIns: newBuyIns,
+          totalChips: newBuyIns * s.chipsPerBuyIn,
+        };
+      });
+      return {
+        ...state,
+        session: {
+          ...s,
+          players,
+          ...recalcPot(players, s),
+        },
+      };
+    }
+
+    case 'REMOVE_BUYIN': {
+      const s = state.session;
+      const players = s.players.map((p, i) => {
+        if (i !== action.payload) return p;
+        const newBuyIns = Math.max(1, p.buyIns - 1);
         return {
           ...p,
           buyIns: newBuyIns,
@@ -118,6 +139,29 @@ function gameReducer(state, action) {
       const s = state.session;
       const players = s.players.map((p, i) =>
         i === index ? { ...p, remainingChips: chips } : p
+      );
+      return {
+        ...state,
+        session: { ...s, players },
+      };
+    }
+
+    case 'SET_PLAYER_EXIT_CHIPS': {
+      const { index, chips } = action.payload;
+      const s = state.session;
+      const players = s.players.map((p, i) =>
+        i === index ? { ...p, exitChips: chips } : p
+      );
+      return {
+        ...state,
+        session: { ...s, players },
+      };
+    }
+
+    case 'CLEAR_PLAYER_EXIT_CHIPS': {
+      const s = state.session;
+      const players = s.players.map((p, i) =>
+        i === action.payload ? { ...p, exitChips: null } : p
       );
       return {
         ...state,
@@ -215,6 +259,12 @@ export function GameProvider({ children }) {
     []
   );
 
+  const removeBuyIn = useCallback(
+    (index) =>
+      dispatch({ type: 'REMOVE_BUYIN', payload: index }),
+    []
+  );
+
   const addBuyIn = useCallback(
     (index, count = 1) =>
       dispatch({ type: 'ADD_BUYIN', payload: { index, count } }),
@@ -245,6 +295,18 @@ export function GameProvider({ children }) {
 
   const reset = useCallback(() => dispatch({ type: 'RESET' }), []);
 
+  const setPlayerExitChips = useCallback(
+    (index, chips) =>
+      dispatch({ type: 'SET_PLAYER_EXIT_CHIPS', payload: { index, chips } }),
+    []
+  );
+
+  const clearPlayerExitChips = useCallback(
+    (index) =>
+      dispatch({ type: 'CLEAR_PLAYER_EXIT_CHIPS', payload: index }),
+    []
+  );
+
   const value = {
     ...state,
     initSession,
@@ -253,7 +315,10 @@ export function GameProvider({ children }) {
     removePlayer,
     updatePlayerBuyIns,
     addBuyIn,
+    removeBuyIn,
     setRemainingChips,
+    setPlayerExitChips,
+    clearPlayerExitChips,
     calculateResults,
     updateDuration,
     loadSession,

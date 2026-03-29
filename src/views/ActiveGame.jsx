@@ -1,18 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
+import { saveExitChips, getExitChips } from '../services/storage';
 import Navbar from '../components/Navbar';
 import PotSummary from '../components/PotSummary';
 import './ActiveGame.css';
 
 export default function ActiveGame() {
   const navigate = useNavigate();
-  const { session, addBuyIn, addPlayer } = useGame();
+  const {
+    session, addBuyIn, removeBuyIn, updatePlayerBuyIns, addPlayer,
+    setPlayerExitChips, clearPlayerExitChips,
+  } = useGame();
   const [elapsed, setElapsed] = useState('');
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerBuyIns, setNewPlayerBuyIns] = useState(1);
   const [addError, setAddError] = useState('');
+  const [editingBuyIn, setEditingBuyIn] = useState(null);
+  const [editBuyInValue, setEditBuyInValue] = useState('');
+  const [cashingOut, setCashingOut] = useState(null); // index of player showing exit input
+  const [exitChipInput, setExitChipInput] = useState('');
 
   useEffect(() => {
     if (!session) return;
@@ -32,10 +40,48 @@ export default function ActiveGame() {
     return () => clearInterval(timer);
   }, [session]);
 
+  // Load persisted exit chips on mount
+  useEffect(() => {
+    if (!session) return;
+    const saved = getExitChips(session.id);
+    Object.entries(saved).forEach(([idx, chips]) => {
+      const i = parseInt(idx, 10);
+      if (session.players[i] && session.players[i].exitChips == null) {
+        setPlayerExitChips(i, chips);
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!session) {
     navigate('/new', { state: { toastMessage: 'No active session — start a new one' } });
     return null;
   }
+
+  const handleBuyInEditStart = (index) => {
+    setEditingBuyIn(index);
+    setEditBuyInValue(String(session.players[index].buyIns));
+  };
+
+  const handleBuyInEditConfirm = (index) => {
+    const parsed = parseInt(editBuyInValue, 10);
+    if (!isNaN(parsed) && parsed >= 1) {
+      updatePlayerBuyIns(index, parsed);
+      setEditingBuyIn(null);
+    } else {
+      // Invalid — shake and revert
+      setEditBuyInValue(String(session.players[index].buyIns));
+      const el = document.getElementById(`buyin-edit-input-${index}`);
+      if (el) {
+        el.classList.add('shake');
+        setTimeout(() => el.classList.remove('shake'), 400);
+      }
+    }
+  };
+
+  const handleBuyInEditKeyDown = (e, index) => {
+    if (e.key === 'Enter') handleBuyInEditConfirm(index);
+    if (e.key === 'Escape') setEditingBuyIn(null);
+  };
 
   const handleAddNewPlayer = () => {
     const trimmed = newPlayerName.trim();
@@ -53,6 +99,30 @@ export default function ActiveGame() {
     setNewPlayerBuyIns(1);
     setShowAddPlayer(false);
     setAddError('');
+  };
+
+  const handleCashOutStart = (index) => {
+    setCashingOut(index);
+    setExitChipInput('');
+  };
+
+  const handleCashOutConfirm = (index) => {
+    const parsed = parseFloat(exitChipInput);
+    if (isNaN(parsed) || parsed < 0) return;
+    setPlayerExitChips(index, parsed);
+    saveExitChips(session.id, index, parsed);
+    setCashingOut(null);
+    setExitChipInput('');
+  };
+
+  const handleCashOutUndo = (index) => {
+    clearPlayerExitChips(index);
+    saveExitChips(session.id, index, null);
+  };
+
+  const handleExitChipKeyDown = (e, index) => {
+    if (e.key === 'Enter') handleCashOutConfirm(index);
+    if (e.key === 'Escape') setCashingOut(null);
   };
 
   return (
@@ -76,28 +146,132 @@ export default function ActiveGame() {
         <div className="game-players stagger-children">
           {session.players.map((player, i) => {
             const buyInRS = player.buyIns * session.buyInAmount;
+            const isCashedOut = player.exitChips != null;
             return (
-              <div key={i} className="game-player-card glass-card">
+              <div key={i} className={`game-player-card glass-card ${isCashedOut ? 'cashed-out' : ''}`}>
                 <div className="game-player-main">
                   <div className="player-avatar">
                     {player.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="game-player-info">
-                    <div className="player-name">{player.name}</div>
+                    <div className="player-name">
+                      {player.name}
+                      {isCashedOut && (
+                        <span className="cashed-out-badge">CASHED OUT</span>
+                      )}
+                    </div>
                     <div className="player-stats text-secondary">
                       {player.buyIns} buy-in{player.buyIns > 1 ? 's' : ''} ·{' '}
                       <span className="text-gold">{player.totalChips.toLocaleString()} chips</span> ·{' '}
                       ₹{buyInRS}
+                      {isCashedOut && (
+                        <span className="exit-chips-display">
+                          {' '}· Exit: {player.exitChips.toLocaleString()} chips
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    onClick={() => addBuyIn(i)}
-                    id={`btn-add-buyin-${i}`}
-                  >
-                    + Buy-in
-                  </button>
                 </div>
+
+                {/* Buy-in stepper — hidden when cashed out */}
+                {!isCashedOut && (
+                  <div className="buyin-stepper-row">
+                    <button
+                      className="btn btn-sm btn-secondary buyin-step-btn"
+                      onClick={() => removeBuyIn(i)}
+                      disabled={player.buyIns <= 1}
+                      id={`btn-remove-buyin-${i}`}
+                      title="Remove 1 buy-in"
+                    >
+                      −
+                    </button>
+                    {editingBuyIn === i ? (
+                      <input
+                        className="input buyin-edit-input"
+                        id={`buyin-edit-input-${i}`}
+                        type="number"
+                        inputMode="numeric"
+                        min="1"
+                        value={editBuyInValue}
+                        onChange={(e) => setEditBuyInValue(e.target.value)}
+                        onBlur={() => handleBuyInEditConfirm(i)}
+                        onKeyDown={(e) => handleBuyInEditKeyDown(e, i)}
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        className="buyin-count-btn"
+                        onClick={() => handleBuyInEditStart(i)}
+                        title="Click to edit buy-in count"
+                        id={`btn-buyin-count-${i}`}
+                      >
+                        {player.buyIns}
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-sm btn-secondary buyin-step-btn"
+                      onClick={() => addBuyIn(i)}
+                      id={`btn-add-buyin-${i}`}
+                      title="Add 1 buy-in"
+                    >
+                      +
+                    </button>
+                    <button
+                      className="btn btn-sm btn-ghost cashout-btn"
+                      onClick={() => handleCashOutStart(i)}
+                      id={`btn-cashout-${i}`}
+                      title="Cash out this player"
+                    >
+                      💰 Cash Out
+                    </button>
+                  </div>
+                )}
+
+                {/* Cash-out inline input */}
+                {cashingOut === i && !isCashedOut && (
+                  <div className="cashout-input-row animate-fade-in">
+                    <label className="text-secondary">Exit Chips:</label>
+                    <input
+                      className="input cashout-input"
+                      type="number"
+                      inputMode="numeric"
+                      min="0"
+                      placeholder="0"
+                      value={exitChipInput}
+                      onChange={(e) => setExitChipInput(e.target.value)}
+                      onKeyDown={(e) => handleExitChipKeyDown(e, i)}
+                      id={`input-exit-chips-${i}`}
+                      autoFocus
+                    />
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => handleCashOutConfirm(i)}
+                      disabled={exitChipInput === '' || isNaN(parseFloat(exitChipInput)) || parseFloat(exitChipInput) < 0}
+                      id={`btn-confirm-cashout-${i}`}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => setCashingOut(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                {/* Undo cash-out */}
+                {isCashedOut && (
+                  <div className="cashout-undo-row">
+                    <button
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => handleCashOutUndo(i)}
+                      id={`btn-undo-cashout-${i}`}
+                    >
+                      ↩ Undo Cash Out
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import Navbar from '../components/Navbar';
@@ -9,8 +9,23 @@ export default function EndGame() {
   const navigate = useNavigate();
   const { session, setRemainingChips, calculateResults } = useGame();
   const [chipInputs, setChipInputs] = useState(
-    () => session?.players.map(() => '') || []
+    () => {
+      if (!session) return [];
+      return session.players.map((p) =>
+        p.exitChips != null ? String(p.exitChips) : ''
+      );
+    }
   );
+
+  // On mount, sync pre-filled exit chips with the context's remainingChips
+  useEffect(() => {
+    if (!session) return;
+    session.players.forEach((p, i) => {
+      if (p.exitChips != null) {
+        setRemainingChips(i, p.exitChips);
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!session) {
     navigate('/new', { state: { toastMessage: 'No active session — start a new one' } });
@@ -42,7 +57,7 @@ export default function EndGame() {
 
   return (
     <>
-      <Navbar title="End Game" />
+      <Navbar title="End Game" onBack={() => navigate('/game')} />
       <div className="page">
         <PotSummary
           totalChips={session.totalPotChips}
@@ -73,15 +88,20 @@ export default function EndGame() {
                   </div>
                 </div>
               </div>
-              <input
-                className="input endgame-input"
-                type="number"
-                inputMode="numeric"
-                placeholder="Chips"
-                value={chipInputs[i]}
-                onChange={(e) => handleChipChange(i, e.target.value)}
-                id={`input-chips-${i}`}
-              />
+              <div className="endgame-input-wrapper">
+                <input
+                  className="input endgame-input"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="Chips"
+                  value={chipInputs[i]}
+                  onChange={(e) => handleChipChange(i, e.target.value)}
+                  id={`input-chips-${i}`}
+                />
+                {player.exitChips != null && (
+                  <span className="prefilled-label text-secondary">(pre-filled)</span>
+                )}
+              </div>
             </div>
           ))}
         </div>

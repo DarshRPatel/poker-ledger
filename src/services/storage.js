@@ -121,3 +121,52 @@ export function createSession(config) {
     status: 'active',
   };
 }
+
+/* ==========================================
+   Exit Chips Persistence (mid-game cash-outs)
+   ========================================== */
+
+const EXIT_CHIPS_PREFIX = 'poker_ledger_exit_chips_';
+
+/**
+ * Save exit chips for a specific player in a session.
+ * @param {string} sessionId
+ * @param {number} playerIndex
+ * @param {number|null} chips - null to clear
+ */
+export function saveExitChips(sessionId, playerIndex, chips) {
+  const key = EXIT_CHIPS_PREFIX + sessionId;
+  try {
+    const data = JSON.parse(localStorage.getItem(key) || '{}');
+    if (chips === null) {
+      delete data[playerIndex];
+    } else {
+      data[playerIndex] = chips;
+    }
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    console.error('Failed to save exit chips');
+  }
+}
+
+/**
+ * Get all saved exit chips for a session.
+ * @param {string} sessionId
+ * @returns {object} - { [playerIndex]: chips }
+ */
+export function getExitChips(sessionId) {
+  const key = EXIT_CHIPS_PREFIX + sessionId;
+  try {
+    return JSON.parse(localStorage.getItem(key) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Clear all exit chips for a session (used on save/reset).
+ * @param {string} sessionId
+ */
+export function clearExitChips(sessionId) {
+  localStorage.removeItem(EXIT_CHIPS_PREFIX + sessionId);
+}

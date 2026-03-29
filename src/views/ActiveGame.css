@@ -85,3 +85,136 @@
   gap: var(--sp-sm);
   margin-top: var(--sp-md);
 }
+
+/* Buy-in stepper row */
+.buyin-stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-xs, 6px);
+  margin-top: var(--sp-sm);
+}
+
+.buyin-step-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm, 8px);
+}
+
+.buyin-count-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1.1rem;
+  min-width: 44px;
+  height: 36px;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: center;
+}
+
+.buyin-count-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--accent, #7c5cfc);
+}
+
+.buyin-edit-input {
+  width: 56px;
+  height: 36px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: var(--radius-sm, 8px);
+}
+
+/* Remove number input arrows */
+.buyin-edit-input::-webkit-inner-spin-button,
+.buyin-edit-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.buyin-edit-input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Shake animation for invalid input */
+@keyframes shake-input {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+
+.shake {
+  animation: shake-input 0.4s ease;
+  border-color: var(--danger, #e74c4c) !important;
+}
+
+/* Cash-out styles */
+.game-player-card.cashed-out {
+  opacity: 0.65;
+  border-left: 3px solid var(--accent, #7c5cfc);
+}
+
+.cashed-out-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--accent, #7c5cfc);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.exit-chips-display {
+  color: var(--accent, #7c5cfc);
+  font-weight: 600;
+}
+
+.cashout-btn {
+  margin-left: auto;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.cashout-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm, 8px);
+  margin-top: var(--sp-sm);
+  padding-top: var(--sp-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cashout-input-row label {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.cashout-input {
+  width: 100px;
+  height: 34px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.cashout-undo-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--sp-xs, 4px);
+}
