@@ -21,6 +21,7 @@ export default function ActiveGame() {
   const [editBuyInValue, setEditBuyInValue] = useState('');
   const [cashingOut, setCashingOut] = useState(null); // index of player showing exit input
   const [exitChipInput, setExitChipInput] = useState('');
+  const [cashoutError, setCashoutError] = useState('');
 
   useEffect(() => {
     if (!session) return;
@@ -104,11 +105,33 @@ export default function ActiveGame() {
   const handleCashOutStart = (index) => {
     setCashingOut(index);
     setExitChipInput('');
+    setCashoutError('');
   };
 
   const handleCashOutConfirm = (index) => {
-    const parsed = parseFloat(exitChipInput);
-    if (isNaN(parsed) || parsed < 0) return;
+    const raw = exitChipInput.trim();
+    if (raw === '') {
+      setCashoutError('Enter a chip count');
+      return;
+    }
+    const parsed = parseFloat(raw);
+    if (isNaN(parsed)) {
+      setCashoutError('Must be a valid number');
+      return;
+    }
+    if (parsed < 0) {
+      setCashoutError('Chips cannot be negative');
+      return;
+    }
+    if (!Number.isInteger(parsed)) {
+      setCashoutError('Chips must be a whole number');
+      return;
+    }
+    if (parsed > session.totalPotChips) {
+      setCashoutError(`Cannot exceed pot (${session.totalPotChips.toLocaleString()} chips)`);
+      return;
+    }
+    setCashoutError('');
     setPlayerExitChips(index, parsed);
     saveExitChips(session.id, index, parsed);
     setCashingOut(null);
@@ -229,34 +252,39 @@ export default function ActiveGame() {
 
                 {/* Cash-out inline input */}
                 {cashingOut === i && !isCashedOut && (
-                  <div className="cashout-input-row animate-fade-in">
-                    <label className="text-secondary">Exit Chips:</label>
-                    <input
-                      className="input cashout-input"
-                      type="number"
-                      inputMode="numeric"
-                      min="0"
-                      placeholder="0"
-                      value={exitChipInput}
-                      onChange={(e) => setExitChipInput(e.target.value)}
-                      onKeyDown={(e) => handleExitChipKeyDown(e, i)}
-                      id={`input-exit-chips-${i}`}
-                      autoFocus
-                    />
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => handleCashOutConfirm(i)}
-                      disabled={exitChipInput === '' || isNaN(parseFloat(exitChipInput)) || parseFloat(exitChipInput) < 0}
-                      id={`btn-confirm-cashout-${i}`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      className="btn btn-sm btn-ghost"
-                      onClick={() => setCashingOut(null)}
-                    >
-                      ✕
-                    </button>
+                  <div className="cashout-input-section animate-fade-in">
+                    <div className="cashout-input-row">
+                      <label className="text-secondary">Exit Chips:</label>
+                      <input
+                        className={`input cashout-input ${cashoutError ? 'input-error' : ''}`}
+                        type="number"
+                        inputMode="numeric"
+                        min="0"
+                        max={session.totalPotChips}
+                        placeholder="0"
+                        value={exitChipInput}
+                        onChange={(e) => { setExitChipInput(e.target.value); setCashoutError(''); }}
+                        onKeyDown={(e) => handleExitChipKeyDown(e, i)}
+                        id={`input-exit-chips-${i}`}
+                        autoFocus
+                      />
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => handleCashOutConfirm(i)}
+                        id={`btn-confirm-cashout-${i}`}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => { setCashingOut(null); setCashoutError(''); }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {cashoutError && (
+                      <div className="cashout-error" id="cashout-error">{cashoutError}</div>
+                    )}
                   </div>
                 )}
 

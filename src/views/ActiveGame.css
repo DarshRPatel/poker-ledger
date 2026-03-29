@@ -192,13 +192,16 @@
   font-size: 0.8rem;
 }
 
+.cashout-input-section {
+  margin-top: var(--sp-sm);
+  padding-top: var(--sp-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .cashout-input-row {
   display: flex;
   align-items: center;
   gap: var(--sp-sm, 8px);
-  margin-top: var(--sp-sm);
-  padding-top: var(--sp-sm);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .cashout-input-row label {
@@ -211,6 +214,17 @@
   height: 34px;
   font-size: 0.95rem;
   text-align: center;
+}
+
+.cashout-input.input-error {
+  border-color: var(--danger, #e74c4c);
+}
+
+.cashout-error {
+  color: var(--danger, #e74c4c);
+  font-size: 0.75rem;
+  margin-top: 4px;
+  padding-left: 2px;
 }
 
 .cashout-undo-row {
