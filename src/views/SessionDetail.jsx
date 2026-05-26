@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSession } from '../services/storage';
 import { calculateSettlements } from '../utils/settlement';
@@ -7,7 +8,35 @@ import './SessionResults.css';
 export default function SessionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const session = getSession(id);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSession() {
+      setLoading(true);
+      try {
+        const data = await getSession(id);
+        setSession(data);
+      } catch (err) {
+        console.error('Failed to load session details:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSession();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <>
+        <Navbar title="Session" />
+        <div className="page text-center" style={{ padding: '48px 0' }}>
+          <div className="spinner"></div>
+          <p className="text-secondary mt-sm">Loading session details...</p>
+        </div>
+      </>
+    );
+  }
 
   if (!session) {
     return (

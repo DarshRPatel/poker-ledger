@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
+import { getNextSessionNumber } from '../services/storage';
 import Navbar from '../components/Navbar';
 import './NewSession.css';
 
@@ -9,6 +10,7 @@ export default function NewSession() {
   const { initSession } = useGame();
   const [buyInAmount, setBuyInAmount] = useState('');
   const [chipsPerBuyIn, setChipsPerBuyIn] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const amount = parseFloat(buyInAmount) || 0;
   const chips = parseFloat(chipsPerBuyIn) || 0;
@@ -18,9 +20,17 @@ export default function NewSession() {
   const isAmountInvalid = buyInAmount !== '' && amount < 1;
   const isChipsInvalid = chipsPerBuyIn !== '' && chips < 1;
 
-  const handleNext = () => {
-    initSession({ buyInAmount: amount, chipsPerBuyIn: chips });
-    navigate('/players');
+  const handleNext = async () => {
+    setLoading(true);
+    try {
+      const nextNum = await getNextSessionNumber();
+      initSession({ buyInAmount: amount, chipsPerBuyIn: chips, sessionNumber: nextNum });
+      navigate('/players');
+    } catch (err) {
+      console.error('Failed to initialize session:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -84,11 +94,11 @@ export default function NewSession() {
         <button
           className="btn btn-primary btn-lg btn-full mt-lg animate-fade-in-up"
           style={{ animationDelay: '300ms' }}
-          disabled={!isValid}
+          disabled={!isValid || loading}
           onClick={handleNext}
           id="btn-next-players"
         >
-          Next → Add Players
+          {loading ? 'Initializing...' : 'Next → Add Players'}
         </button>
       </div>
     </>

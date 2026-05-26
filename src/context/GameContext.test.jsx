@@ -4,18 +4,22 @@ import { GameProvider, useGame } from './GameContext';
 
 // Mock storage
 vi.mock('../services/storage', () => ({
-  createSession: (payload) => ({
-    id: 'mock_session_id',
-    sessionNumber: 1,
-    startTime: new Date().toISOString(),
-    players: [],
-    buyInAmount: payload.amount,
-    chipsPerBuyIn: payload.chips,
-    ratio: payload.ratio,
-    totalPotChips: 0,
-    totalPotRS: 0,
-    status: 'active'
-  })
+  createSession: (payload) => {
+    const buyInAmount = payload.buyInAmount ?? payload.amount;
+    const chipsPerBuyIn = payload.chipsPerBuyIn ?? payload.chips;
+    return {
+      id: 'mock_session_id',
+      sessionNumber: 1,
+      startTime: new Date().toISOString(),
+      players: [],
+      buyInAmount,
+      chipsPerBuyIn,
+      ratio: chipsPerBuyIn / buyInAmount,
+      totalPotChips: 0,
+      totalPotRS: 0,
+      status: 'active'
+    };
+  }
 }));
 
 describe('GameContext Hook & Provider', () => {

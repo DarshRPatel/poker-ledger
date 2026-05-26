@@ -24,6 +24,7 @@ export default function SessionResults() {
   const navigate = useNavigate();
   const { session, updateDuration, reset, setStep } = useGame();
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [customDuration, setCustomDuration] = useState(false);
   const [customHrs, setCustomHrs] = useState('');
   const [customMins, setCustomMins] = useState('');
@@ -54,13 +55,20 @@ export default function SessionResults() {
     return `${h} hr ${m} min`;
   };
 
-  const handleSave = () => {
-    saveSession(session);
-    setSaved(true);
-    setTimeout(() => {
-      reset();
-      navigate('/');
-    }, 1200);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await saveSession(session);
+      setSaved(true);
+      setTimeout(() => {
+        reset();
+        navigate('/');
+      }, 1200);
+    } catch (err) {
+      console.error('Failed to save session:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDurationSelect = (e) => {
@@ -253,7 +261,7 @@ export default function SessionResults() {
           <button
             className="btn btn-secondary btn-lg btn-full"
             onClick={handleBackToGame}
-            disabled={saved}
+            disabled={saved || saving}
             id="btn-back-to-game"
           >
             ← Back to Game
@@ -261,10 +269,10 @@ export default function SessionResults() {
           <button
             className={`btn btn-lg btn-full ${saved ? 'btn-saved' : 'btn-primary'}`}
             onClick={handleSave}
-            disabled={saved}
+            disabled={saved || saving}
             id="btn-save-session"
           >
-            {saved ? '✓ Session Saved!' : '💾 Save Session'}
+            {saved ? '✓ Session Saved!' : saving ? '💾 Saving...' : '💾 Save Session'}
           </button>
         </div>
       </div>

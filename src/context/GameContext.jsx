@@ -11,7 +11,10 @@ const initialState = {
 function gameReducer(state, action) {
   switch (action.type) {
     case 'INIT_SESSION': {
-      const session = createNewSession(action.payload);
+      const buyInAmount = action.payload.buyInAmount ?? action.payload.amount;
+      const chipsPerBuyIn = action.payload.chipsPerBuyIn ?? action.payload.chips;
+      const sessionNumber = action.payload.sessionNumber;
+      const session = createNewSession({ buyInAmount, chipsPerBuyIn }, sessionNumber);
       return { ...state, session, step: 'players' };
     }
 
