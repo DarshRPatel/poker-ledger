@@ -184,53 +184,29 @@ Once a `manifest.json` and service worker are added, Chrome/Android will show a 
 
 ## Authentication Strategy
 
-The goal: **you (Darsh) are the primary user**, but you want to occasionally invite friends — without building a full auth system right now.
+The goal is to provide a secure, personalized experience for hosts and players while maintaining the absolute minimum friction for casual players at the table. We will execute this in a **two-phase evolutionary path**:
 
-### Phase 1: Simple Passcode Lock (No Backend)
+### Phase 1: Host-Only Auth & Group Leaderboards (Low Friction)
 
-The lightest possible approach. Add a 4-6 digit PIN screen that gates the app.
+*   **How it works**: Only the organizers/hosts (e.g., Darsh) register accounts using Supabase Auth (e.g., email Magic Links). Stored sessions are associated with a unique `host_id`.
+*   **Roster Management**: The host manages a saved roster of player names to prevent spelling variations (avoiding duplicate leaderboard entries).
+*   **Public Share Link**: The app generates a public, read-only URL for the host's group dashboard (e.g., `/league/:host_id`). Other players can open this link to view live games and standings without any sign-in.
+*   **Pros**: Zero friction for friends, clean data collection, and scales to multiple game organizers.
+*   **Cons**: Stats are hosted under a specific organizer's account and cannot be easily viewed in one centralized spot if players play across multiple hosts (resolved in Phase 2).
 
-**How it works:**
-- On first launch, user sets a PIN (stored as a SHA-256 hash in `localStorage`)
-- On every subsequent visit, the app shows a PIN entry screen before showing the dashboard
-- No accounts, no server, no database — purely client-side
-- Friends at the table can use the same PIN (you share it verbally)
+### Phase 2: Player Profile Claiming (Full Identity)
 
-**Pros:** Zero infrastructure, works offline, takes 30 minutes to build
-**Cons:** No per-user identity, PIN is stored in the browser (can be cleared)
-
-### Phase 2: Magic Link / OTP via Supabase Auth
-
-When you're ready for real per-user auth without passwords.
-
-**How it works:**
-- Supabase Auth sends a one-time login link to the user's email
-- User clicks the link → they're authenticated with a JWT
-- Each user sees only their own sessions (row-level security in Postgres)
-- You invite friends by adding their email to an allow-list
-
-**Pros:** No passwords to manage, secure, per-user data isolation
-**Cons:** Requires Supabase setup and an email for each user
-
-### Phase 3: Google OAuth (Scale to Friends)
-
-For when the friend group grows and everyone wants their own account.
-
-**How it works:**
-- "Sign in with Google" button on the login screen
-- Supabase or Firebase handles the OAuth flow
-- Each friend signs in with their Google account
-- You can generate invite links or add friends by email
-
-**Pros:** Familiar UX, no passwords, works with existing Google accounts
-**Cons:** Requires OAuth configuration and a cloud auth provider
+*   **How it works**: On the public league page, players can click a **"Claim Profile"** button next to their name.
+*   **Unified Account**: Signing up/logging in links their verified account to all existing database records under their name.
+*   **Unified Dashboard**: Players get their own private dashboard showing their aggregated performance, charts, win rates, and notes across all hosts' groups they participate in.
+*   **Pros**: Premium personal tracking, strict database row-level security (RLS), and zero barrier to entry since accounts are optional.
+*   **Cons**: Requires a mapping logic to link historical names to verified user accounts.
 
 ### Recommended Path
 
 ```
-Now:     Phase 1 (PIN lock) — 30 min to build, immediate security
-Week 2:  Phase 2 (Magic Link) — when you add Supabase for the DB anyway
-Later:   Phase 3 (Google OAuth) — when friends want their own accounts
+Phase 1:  Host-Only Auth + Public Read-Only Group Dashboards (High value, low friction)
+Phase 2:  Optional Player Sign-In & Profile Claiming (Full player dashboards & cross-group stats)
 ```
 
 ---
