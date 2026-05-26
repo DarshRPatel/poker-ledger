@@ -1,16 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import { getSessions, getLeaderboard, deleteSession } from '../services/storage';
 import { useState, useEffect } from 'react';
+import { useGame } from '../context/GameContext';
 import Navbar from '../components/Navbar';
 import ConfirmModal from '../components/ConfirmModal';
 import './Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user } = useGame();
   const [sessions, setSessions] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [sessionToDelete, setSessionToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -30,6 +33,14 @@ export default function Home() {
     }
     loadData();
   }, []);
+
+  const copyLeagueLink = () => {
+    if (!user) return;
+    const link = `${window.location.origin}/league/${user.id}`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const requestDelete = (id) => {
     setSessionToDelete(id);
@@ -98,6 +109,26 @@ export default function Home() {
           >
             🃏 New Session
           </button>
+
+          {user && (
+            <div className="host-actions glass-card mt-lg" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)', padding: 'var(--sp-md)', alignItems: 'center' }}>
+              <span className="text-secondary" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)' }}>🛡️ Host Control Panel</span>
+              <div style={{ display: 'flex', gap: 'var(--sp-xs)', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
+                <button className="btn btn-secondary btn-sm" style={{ flex: 1, minWidth: '90px' }} onClick={() => navigate('/dashboard')}>
+                  📊 Stats
+                </button>
+                <button className="btn btn-secondary btn-sm" style={{ flex: 1, minWidth: '90px' }} onClick={() => navigate('/roster')}>
+                  👥 Roster
+                </button>
+                <button className="btn btn-secondary btn-sm" style={{ flex: 1, minWidth: '90px' }} onClick={() => navigate(`/league/${user.id}`)}>
+                  🏆 League
+                </button>
+                <button className="btn btn-secondary btn-sm" style={{ flex: 1.5, minWidth: '130px' }} onClick={copyLeagueLink}>
+                  {copied ? '✅ Copied!' : '📋 Share Link'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {loading ? (

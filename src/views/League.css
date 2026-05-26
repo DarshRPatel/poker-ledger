@@ -1,0 +1,148 @@
+.league-hero {
+  text-align: center;
+  padding: var(--sp-xl) var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+.league-hero h1 {
+  font-size: 2rem;
+  margin-bottom: var(--sp-sm);
+  background: linear-gradient(135deg, var(--text-primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-suits {
+  font-size: 2rem;
+  letter-spacing: 12px;
+  margin-bottom: var(--sp-md);
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Standings Leaderboard */
+.leaderboard {
+  overflow: hidden;
+}
+
+.leaderboard-header,
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 60px 80px;
+  align-items: center;
+  padding: var(--sp-sm) var(--sp-md);
+}
+
+.leaderboard-header {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.leaderboard-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background var(--duration-fast);
+}
+
+.leaderboard-row:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.leaderboard-row.top-three {
+  font-weight: 600;
+}
+
+.lb-rank { text-align: center; }
+.lb-name { font-weight: 500; }
+.lb-sessions { text-align: center; color: var(--text-secondary); font-size: 0.9rem; }
+.lb-net { text-align: right; font-weight: 600; font-size: 0.95rem; }
+
+/* Match History Session Cards */
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+.session-card {
+  padding: var(--sp-md);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.session-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.session-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-sm);
+}
+
+.session-number {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.session-date {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.session-card-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+}
+
+.session-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.session-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: var(--sp-xl);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: var(--sp-md);
+  opacity: 0.5;
+}

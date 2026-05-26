@@ -1,0 +1,107 @@
+.dashboard-hero {
+  text-align: center;
+  padding: var(--sp-lg) var(--sp-md) var(--sp-md) var(--sp-md);
+  margin-bottom: var(--sp-md);
+}
+
+.dashboard-hero h1 {
+  font-size: 2.2rem;
+  margin-top: var(--sp-xs);
+  background: linear-gradient(135deg, var(--text-primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-text {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Stats Grid */
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-md) var(--sp-sm);
+  text-align: center;
+}
+
+.stat-card .stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.stat-card .stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: var(--sp-xs);
+}
+
+/* SVG Chart */
+.chart-container {
+  padding: var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+.chart-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-md);
+  font-weight: 600;
+  border-left: 2px solid var(--accent);
+  padding-left: var(--sp-xs);
+}
+
+.performance-chart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-grid-line {
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 1;
+}
+
+.chart-grid-zero {
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.chart-label {
+  font-size: 10px;
+  fill: var(--text-muted);
+  text-anchor: end;
+  font-weight: 500;
+}
+
+.zero-label {
+  fill: var(--text-secondary);
+}
+
+.chart-dot {
+  cursor: pointer;
+  transition: r var(--duration-fast);
+}
+
+.chart-dot:hover {
+  r: 6;
+}

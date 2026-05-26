@@ -158,7 +158,14 @@ export async function saveSession(session) {
 
   if (isSupabaseConfigured) {
     try {
-      const dbRow = mapSessionToDb(session);
+      const { data: { user } } = await supabase.auth.getUser();
+      const hostId = user?.id || null;
+
+      const dbRow = {
+        ...mapSessionToDb(session),
+        host_id: hostId
+      };
+
       const { error } = await supabase
         .from('sessions')
         .upsert(dbRow);
@@ -223,6 +230,34 @@ export async function getNextSessionNumber() {
   }
 }
 
+export function calculateLeaderboard(sessions) {
+  const completed = sessions.filter(s => s.status === 'completed');
+  const playerMap = {};
+
+  for (const session of completed) {
+    for (const player of session.players) {
+      if (!playerMap[player.name]) {
+        playerMap[player.name] = {
+          name: player.name,
+          sessionsPlayed: 0,
+          totalBuyInRS: 0,
+          totalOutRS: 0,
+          totalNet: 0,
+        };
+      }
+      const p = playerMap[player.name];
+      p.sessionsPlayed += 1;
+      const buyInRS = player.buyIns * session.buyInAmount;
+      const outRS = (player.remainingChips / session.ratio) || 0;
+      p.totalBuyInRS += buyInRS;
+      p.totalOutRS += outRS;
+      p.totalNet += (outRS - buyInRS);
+    }
+  }
+
+  return Object.values(playerMap).sort((a, b) => b.totalNet - a.totalNet);
+}
+
 /**
  * Get all-time leaderboard
  * @returns {Promise<Array>} Sorted by totalNet descending
@@ -230,33 +265,33 @@ export async function getNextSessionNumber() {
 export async function getLeaderboard() {
   try {
     const sessions = await getSessions();
-    const completed = sessions.filter(s => s.status === 'completed');
-    const playerMap = {};
-
-    for (const session of completed) {
-      for (const player of session.players) {
-        if (!playerMap[player.name]) {
-          playerMap[player.name] = {
-            name: player.name,
-            sessionsPlayed: 0,
-            totalBuyInRS: 0,
-            totalOutRS: 0,
-            totalNet: 0,
-          };
-        }
-        const p = playerMap[player.name];
-        p.sessionsPlayed += 1;
-        const buyInRS = player.buyIns * session.buyInAmount;
-        const outRS = (player.remainingChips / session.ratio) || 0;
-        p.totalBuyInRS += buyInRS;
-        p.totalOutRS += outRS;
-        p.totalNet += (outRS - buyInRS);
-      }
-    }
-
-    return Object.values(playerMap).sort((a, b) => b.totalNet - a.totalNet);
+    return calculateLeaderboard(sessions);
   } catch (err) {
     console.error('Failed to calculate leaderboard:', err);
+    return [];
+  }
+}
+
+/**
+ * Get all sessions scoped to a specific host
+ * @param {string} hostId
+ * @returns {Promise<Array>} Scoped session list
+ */
+export async function getSessionsByHost(hostId) {
+  if (!isSupabaseConfigured) {
+    return getLocalSessions();
+  }
+  try {
+    const { data, error } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('host_id', hostId)
+      .order('start_time', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(mapSessionFromDb);
+  } catch (err) {
+    console.error(`Failed to get sessions for host ${hostId} from Supabase:`, err);
     return [];
   }
 }

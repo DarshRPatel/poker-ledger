@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, useCallback } from 'react';
+import { createContext, useContext, useReducer, useCallback, useState, useEffect } from 'react';
 import { createSession as createNewSession } from '../services/storage';
+import { supabase } from '../services/supabaseClient';
 
 const GameContext = createContext(null);
 
@@ -235,6 +236,33 @@ function recalcPot(players, session) {
 
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    // Get active session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  const signOut = useCallback(async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Failed to sign out:', err);
+    }
+  }, []);
 
   const initSession = useCallback(
     (config) => dispatch({ type: 'INIT_SESSION', payload: config }),
@@ -312,6 +340,9 @@ export function GameProvider({ children }) {
 
   const value = {
     ...state,
+    user,
+    authLoading,
+    signOut,
     initSession,
     setStep,
     addPlayer,

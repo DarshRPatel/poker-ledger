@@ -79,3 +79,34 @@
   min-width: 24px;
   text-align: center;
 }
+
+/* Suggestions Autocomplete List */
+.suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-sm);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-sm);
+}
+
+.suggestion-pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: var(--radius-xl);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.suggestion-pill:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-focus);
+  color: var(--accent);
+}
+

@@ -6,7 +6,7 @@ import Navbar from '../components/Navbar';
 import './SessionResults.css';
 
 export default function SessionDetail() {
-  const { id } = useParams();
+  const { id, hostId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export default function SessionDetail() {
   if (loading) {
     return (
       <>
-        <Navbar title="Session" />
+        <Navbar title="Session" showBack={true} onBack={hostId ? () => navigate(`/league/${hostId}`) : undefined} />
         <div className="page text-center" style={{ padding: '48px 0' }}>
           <div className="spinner"></div>
           <p className="text-secondary mt-sm">Loading session details...</p>
@@ -41,16 +41,16 @@ export default function SessionDetail() {
   if (!session) {
     return (
       <>
-        <Navbar title="Session" />
+        <Navbar title="Session" showBack={true} onBack={hostId ? () => navigate(`/league/${hostId}`) : undefined} />
         <div className="page text-center">
           <div style={{ padding: '48px 0' }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🃏</div>
             <p>Session not found</p>
             <button
               className="btn btn-primary mt-lg"
-              onClick={() => navigate('/')}
+              onClick={() => navigate(hostId ? `/league/${hostId}` : '/')}
             >
-              Go Home
+              {hostId ? 'Go to League' : 'Go Home'}
             </button>
           </div>
         </div>
@@ -92,7 +92,11 @@ export default function SessionDetail() {
 
   return (
     <>
-      <Navbar title={`Session #${session.sessionNumber}`} />
+      <Navbar 
+        title={`Session #${session.sessionNumber}`} 
+        showBack={true} 
+        onBack={hostId ? () => navigate(`/league/${hostId}`) : undefined} 
+      />
       <div className="page">
         {/* Header */}
         <div className="results-header animate-fade-in-up">
@@ -188,9 +192,9 @@ export default function SessionDetail() {
 
         <button
           className="btn btn-secondary btn-full mt-lg"
-          onClick={() => navigate('/')}
+          onClick={() => navigate(hostId ? `/league/${hostId}` : '/')}
         >
-          ← Back to Home
+          {hostId ? '← Back to League' : '← Back to Home'}
         </button>
       </div>
     </>

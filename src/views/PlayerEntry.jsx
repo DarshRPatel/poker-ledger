@@ -1,15 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
+import { supabase } from '../services/supabaseClient';
 import Navbar from '../components/Navbar';
 import './PlayerEntry.css';
 
 export default function PlayerEntry() {
   const navigate = useNavigate();
-  const { session, addPlayer, removePlayer, updatePlayerBuyIns } = useGame();
+  const { session, addPlayer, removePlayer, updatePlayerBuyIns, user } = useGame();
   const [name, setName] = useState('');
   const [showAdvanced, setShowAdvanced] = useState({});
   const [error, setError] = useState('');
+  const [roster, setRoster] = useState([]);
+
+  useEffect(() => {
+    async function fetchRoster() {
+      if (!user) return;
+      try {
+        const { data } = await supabase
+          .from('rosters')
+          .select('name')
+          .eq('host_id', user.id);
+        setRoster((data || []).map(r => r.name));
+      } catch (err) {
+        console.error('Failed to fetch roster suggestions:', err);
+      }
+    }
+    fetchRoster();
+  }, [user]);
 
   if (!session) {
     navigate('/new', { state: { toastMessage: 'No active session — start a new one' } });
@@ -41,6 +59,12 @@ export default function PlayerEntry() {
   };
 
   const canContinue = session.players.length >= 2;
+
+  const filteredSuggestions = roster.filter(playerName => {
+    const isMatch = playerName.toLowerCase().includes(name.toLowerCase());
+    const isAlreadyInGame = session.players.some(p => p.name.toLowerCase() === playerName.toLowerCase());
+    return isMatch && !isAlreadyInGame && name.trim() !== '';
+  });
 
   return (
     <>
@@ -77,6 +101,23 @@ export default function PlayerEntry() {
             + Add
           </button>
         </div>
+        {filteredSuggestions.length > 0 && (
+          <div className="suggestions-list animate-fade-in">
+            {filteredSuggestions.map((suggestionName) => (
+              <button
+                key={suggestionName}
+                className="suggestion-pill"
+                onClick={() => {
+                  addPlayer(suggestionName);
+                  setName('');
+                  setError('');
+                }}
+              >
+                👤 {suggestionName}
+              </button>
+            ))}
+          </div>
+        )}
         {error && <div className="entry-error">{error}</div>}
         <div className="player-count text-muted">
           {session.players.length}/10 players

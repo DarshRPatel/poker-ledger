@@ -1,0 +1,67 @@
+.login-card {
+  width: 100%;
+  padding: var(--sp-xl) var(--sp-lg);
+  margin-top: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+  text-align: center;
+}
+
+.login-header h2 {
+  font-size: 1.5rem;
+  margin-top: var(--sp-sm);
+  margin-bottom: var(--sp-xs);
+  background: linear-gradient(135deg, var(--text-primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-header p {
+  font-size: 0.85rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.login-error-text {
+  font-size: 0.85rem;
+  text-align: center;
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.15);
+  padding: var(--sp-sm) var(--sp-md);
+  border-radius: var(--radius-sm);
+}
+
+.login-success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--sp-md) 0;
+}
+
+.success-icon {
+  font-size: 3rem;
+  margin-bottom: var(--sp-md);
+  animation: float 2s ease-in-out infinite;
+}
+
+.login-success-state h3 {
+  font-size: 1.3rem;
+  color: var(--accent);
+  margin-bottom: var(--sp-sm);
+}
+
+.login-success-state p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
