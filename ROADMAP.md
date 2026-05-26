@@ -186,6 +186,15 @@ The goal is to provide a secure, personalized experience for hosts and players w
 *   **Pros**: Zero friction for friends, clean data collection, and scales to multiple game organizers.
 *   **Cons**: Stats are hosted under a specific organizer's account and cannot be easily viewed in one centralized spot if players play across multiple hosts (resolved in Phase 2).
 
+#### Implementation Tasks:
+- [ ] **Database & RLS Setup**: Add `host_id` uuid references `auth.users(id)` to `sessions` table. Create `rosters` table (`id`, `host_id`, `name`, `created_at`) with unique `(host_id, name)`. Enable RLS with read-only public access and write access gated by `auth.uid() = host_id`.
+- [ ] **Auth Listener Integration**: Integrate Supabase Auth listener state (`user`, `authLoading`) in `GameContext` and expose `signOut` helper.
+- [ ] **Host Login Screen (`/login`)**: Create passwordless Email Magic Link authentication screen.
+- [ ] **Roster Management Screen (`/roster`)**: Create management view for hosts to add/remove player names.
+- [ ] **Autocomplete Roster Suggestions**: Connect roster names to the `PlayerEntry` setup page for name autocompletion.
+- [ ] **Scoping Sessions**: Update session saving logic (`saveSession` in `storage.js`) to capture the logged-in host's ID.
+- [ ] **Public Standings Dashboard (`/league/:host_id`)**: Query and display host-specific standings, match history, and session details (`/league/:host_id/session/:session_id`) without requiring user sign-in.
+
 ### Phase 2: Player Profile Claiming (Full Identity)
 
 *   **How it works**: On the public league page, players can click a **"Claim Profile"** button next to their name.
@@ -193,6 +202,13 @@ The goal is to provide a secure, personalized experience for hosts and players w
 *   **Unified Dashboard**: Players get their own private dashboard showing their aggregated performance, charts, win rates, and notes across all hosts' groups they participate in.
 *   **Pros**: Premium personal tracking, strict database row-level security (RLS), and zero barrier to entry since accounts are optional.
 *   **Cons**: Requires a mapping logic to link historical names to verified user accounts.
+
+#### Implementation Tasks:
+- [ ] **Database Setup**: Create `player_claims` table (`id`, `user_id` unique, `host_id`, `player_name`, `status`, `created_at`). Enable RLS allowing users to claim and hosts to view/approve.
+- [ ] **Leaderboard Claim Button**: Add "Claim Profile" badge/button next to names on `/league/:host_id` standings.
+- [ ] **Claim Processing & Linking**: Direct player to register/sign-in and record a claim to map `auth.uid()` to the host's roster player name.
+- [ ] **Unified Player Dashboard (`/dashboard`)**: Create dashboard view consolidating historical player stats (win rate, total buy-in, net P&L, streaks) across all hosts they've played with.
+- [ ] **Interactive P&L Chart**: Build a line graph of cumulative net profit over time using a lightweight chart library.
 
 ### Recommended Path
 
