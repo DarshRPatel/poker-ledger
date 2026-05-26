@@ -17,15 +17,7 @@
 
 Features that significantly improve the app's usefulness and were explicitly deferred from v1.
 
-### 1. Cloud Database (Replace localStorage)
 
-**What:** Migrate session data from `localStorage` to a cloud database like **Supabase** (Postgres) or **Firebase Firestore**.
-
-**Why:** `localStorage` is browser-specific — clearing browser data, switching devices, or using incognito mode wipes everything. A database makes data persistent, backed up, and accessible from any device.
-
-**Approach:** Supabase is recommended — it offers a generous free tier, Postgres under the hood, row-level security, and a JS client that works well with React. The existing `services/storage.js` already abstracts all data access, so the migration is a clean swap of the implementation layer.
-
----
 
 ### 2. Multi-Device Sync
 
@@ -230,3 +222,7 @@ These are tasks that were originally identified as gaps or future plans but have
 ### 4. Graceful Redirects with Feedback (P0)
 *   **Status:** ✅ Completed in v1.1
 *   **Implementation:** Added active session checks and automatic redirection to `/new` with stateful toast notifications across all sub-views using [GlobalToastHelper.jsx](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/components/GlobalToastHelper.jsx).
+
+### 5. Cloud Database Migration (P1)
+*   **Status:** ✅ Completed in v1.2
+*   **Implementation:** Migrated persistent storage to Supabase (PostgreSQL) asynchronously in [storage.js](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/services/storage.js). Integrates a robust fallback mechanism that redirects queries to browser `localStorage` in automated E2E test environments or when offline.
