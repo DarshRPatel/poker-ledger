@@ -8,6 +8,8 @@ const LOCAL_STORAGE_KEY = 'poker_ledger_sessions';
 
 // Check if Supabase credentials are configured and not placeholders
 const isSupabaseConfigured = 
+  typeof window !== 'undefined' && 
+  !window.navigator?.webdriver &&
   import.meta.env.VITE_SUPABASE_URL && 
   import.meta.env.VITE_SUPABASE_URL !== 'https://placeholder-project.supabase.co' &&
   import.meta.env.VITE_SUPABASE_ANON_KEY &&
