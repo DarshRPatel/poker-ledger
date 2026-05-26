@@ -2,61 +2,16 @@
 
 ## Table of Contents
 
-- [P0 — Gaps in Current Build](#p0--gaps-in-current-build)
 - [P1 — High Value, Next Up](#p1--high-value-next-up)
 - [P2 — Nice to Have](#p2--nice-to-have)
 - [Hosting & Deployment](#hosting--deployment)
 - [Mobile Home Screen (PWA)](#mobile-home-screen-pwa)
 - [Authentication Strategy](#authentication-strategy)
+- [Shipped & Completed](#shipped--completed)
 
 ---
 
-## P0 — Gaps in Current Build
 
-These are issues or missing pieces in the shipped v1 that should be addressed before wider use.
-
-### 1. Progressive Web App (PWA) Support
-
-**What:** Make the app installable on mobile so it behaves like a native app — with its own icon on the home screen, no browser chrome, and offline support.
-
-**Why:** The app is mobile-first and meant to be used at a poker table. Users shouldn't have to open a browser, type a URL, and navigate — they should tap an icon and go.
-
-**What's needed:**
-- `public/manifest.json` with app name, icons (192px + 512px), theme color, `display: standalone`
-- A service worker (via `vite-plugin-pwa`) for caching static assets and enabling offline access
-- Meta tags in `index.html` for iOS (apple-touch-icon, apple-mobile-web-app-capable)
-
----
-
-### 2. Input Validation on New Session
-
-**What:** The New Session screen currently allows invalid values like 0, negative numbers, or empty fields for buy-in amount and chips per buy-in.
-
-**Why:** Submitting `0` as chips-per-buyin causes a division-by-zero in the ratio calculation and breaks the entire game flow.
-
-**Fix:** Add min-value guards (`>= 1`), disable the "Next" button until both fields are valid, and show inline error messages.
-
----
-
-### 3. Styled Delete Confirmation
-
-**What:** Session deletion currently uses `window.confirm()`, which renders a plain browser dialog that breaks the dark casino theme.
-
-**Why:** It's jarring and inconsistent with the rest of the UI. On mobile, the native dialog is especially ugly.
-
-**Fix:** Replace with a custom glassmorphism confirmation modal with "Delete" / "Cancel" buttons.
-
----
-
-### 4. Graceful Redirects with Feedback
-
-**What:** When a user navigates directly to `/players`, `/game`, or `/endgame` without an active session, they get silently redirected to `/new` with no explanation.
-
-**Why:** The user has no idea why they were redirected. This is confusing, especially if they accidentally refreshed.
-
-**Fix:** Show a brief toast notification ("No active session — start a new one") before redirecting.
-
----
 
 ## P1 — High Value, Next Up
 
@@ -277,3 +232,25 @@ Now:     Phase 1 (PIN lock) — 30 min to build, immediate security
 Week 2:  Phase 2 (Magic Link) — when you add Supabase for the DB anyway
 Later:   Phase 3 (Google OAuth) — when friends want their own accounts
 ```
+
+---
+
+## Shipped & Completed
+
+These are tasks that were originally identified as gaps or future plans but have now been fully implemented.
+
+### 1. Progressive Web App (PWA) Support (P0)
+*   **Status:** ✅ Completed in v1.1
+*   **Implementation:** Configured via `vite-plugin-pwa` in [vite.config.js](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/vite.config.js) with custom assets in `public/` and corresponding meta tags in [index.html](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/index.html).
+
+### 2. Input Validation on New Session (P0)
+*   **Status:** ✅ Completed in v1.1
+*   **Implementation:** Added min-value checks and input validation error states in [NewSession.jsx](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/views/NewSession.jsx), preventing division-by-zero or negative entries.
+
+### 3. Styled Delete Confirmation (P0)
+*   **Status:** ✅ Completed in v1.1
+*   **Implementation:** Replaced browser-native `window.confirm()` with a custom themed [ConfirmModal.jsx](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/components/ConfirmModal.jsx) component in [Home.jsx](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/views/Home.jsx).
+
+### 4. Graceful Redirects with Feedback (P0)
+*   **Status:** ✅ Completed in v1.1
+*   **Implementation:** Added active session checks and automatic redirection to `/new` with stateful toast notifications across all sub-views using [GlobalToastHelper.jsx](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/components/GlobalToastHelper.jsx).

@@ -12,7 +12,9 @@ A mobile-first web app to track live poker game sessions — buy-ins, chip count
 - **Session History** — Browse and revisit past completed sessions from the home dashboard
 - **All-Time Leaderboard** — Aggregated stats across all saved sessions
 - **Adjustable Duration** — Choose from presets or enter a custom game duration on the results screen
+- **Progressive Web App (PWA)** — Installable on mobile devices with a standalone display mode, custom home screen icons, and offline asset caching
 - **Offline-First** — All data is persisted in `localStorage`, no backend required
+
 
 ## Tech Stack
 
