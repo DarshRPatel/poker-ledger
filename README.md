@@ -1,6 +1,6 @@
 # ♠ Poker Ledger
 
-A mobile-first web app to track live poker game sessions — buy-ins, chip counts, settlements, and an all-time leaderboard — all stored locally in the browser.
+A mobile-first web app to track live poker game sessions — buy-ins, chip counts, settlements, and an all-time leaderboard — backed by Supabase Cloud Database with a robust offline-first localStorage fallback.
 
 ## Features
 
@@ -13,7 +13,7 @@ A mobile-first web app to track live poker game sessions — buy-ins, chip count
 - **All-Time Leaderboard** — Aggregated stats across all saved sessions
 - **Adjustable Duration** — Choose from presets or enter a custom game duration on the results screen
 - **Progressive Web App (PWA)** — Installable on mobile devices with a standalone display mode, custom home screen icons, and offline asset caching
-- **Offline-First** — All data is persisted in `localStorage`, no backend required
+- **Offline-First with Cloud Sync** — Syncs sessions to a cloud database with automatic, transparent fallback to browser `localStorage` if offline or when running local tests.
 
 
 ## Tech Stack
@@ -24,7 +24,7 @@ A mobile-first web app to track live poker game sessions — buy-ins, chip count
 | Build Tool | [Vite 8](https://vite.dev/) |
 | Routing | [React Router v7](https://reactrouter.com/) |
 | State Management | React Context + `useReducer` |
-| Persistence | `localStorage` |
+| Persistence | [Supabase](https://supabase.com/) (PostgreSQL) with `localStorage` fallback |
 | Styling | Vanilla CSS (dark casino theme, glassmorphism, micro-animations) |
 | Unit / Integration Testing | [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/react) |
 | E2E Testing | [Playwright](https://playwright.dev/) |
@@ -103,6 +103,18 @@ Home → New Session → Player Entry → Buy-in Summary → Active Game → End
 ```bash
 npm install
 ```
+
+### Database Setup (Supabase)
+
+To enable cloud storage and sync features:
+1. Create a Supabase project at [supabase.com](https://supabase.com/).
+2. Run the SQL migration script (found in the active implementation plan or `supabase` setup) inside the SQL Editor of your Supabase dashboard to create the `sessions` table.
+3. Create a `.env` file in the project root based on `.env.example`:
+   ```env
+   VITE_SUPABASE_URL=https://your-project-id.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-public-key
+   ```
+   *If these variables are missing, the application will automatically fall back to full `localStorage` mode.*
 
 ### Start the Dev Server
 
