@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSession } from '../services/storage';
 import { calculateSettlements } from '../utils/settlement';
+import { useLiveSync } from '../hooks/useLiveSync';
 import Navbar from '../components/Navbar';
 import './SessionResults.css';
 
@@ -11,20 +12,24 @@ export default function SessionDetail() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchSession() {
-      setLoading(true);
-      try {
-        const data = await getSession(id);
-        setSession(data);
-      } catch (err) {
-        console.error('Failed to load session details:', err);
-      } finally {
-        setLoading(false);
-      }
+  const fetchSession = useCallback(async (options = {}) => {
+    if (!options.silent) setLoading(true);
+    try {
+      const data = await getSession(id);
+      setSession(data);
+    } catch (err) {
+      console.error('Failed to load session details:', err);
+    } finally {
+      if (!options.silent) setLoading(false);
     }
-    fetchSession();
   }, [id]);
+
+  useEffect(() => {
+    fetchSession();
+  }, [fetchSession]);
+
+  // Realtime subscription updates
+  useLiveSync(['sessions'], () => fetchSession({ silent: true }));
 
   if (loading) {
     return (

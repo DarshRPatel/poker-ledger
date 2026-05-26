@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useCallback, useState, useEffect } from 'react';
-import { createSession as createNewSession } from '../services/storage';
+import { createSession as createNewSession, saveSession } from '../services/storage';
 import { supabase } from '../services/supabaseClient';
 
 const GameContext = createContext(null);
@@ -238,6 +238,13 @@ export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+
+  // Auto-save active sessions to Supabase on state change (real-time sync provider)
+  useEffect(() => {
+    if (state.session && user) {
+      saveSession(state.session);
+    }
+  }, [state.session, user]);
 
   useEffect(() => {
     // Get active session on mount

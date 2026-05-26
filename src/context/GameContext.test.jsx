@@ -4,6 +4,7 @@ import { GameProvider, useGame } from './GameContext';
 
 // Mock storage
 vi.mock('../services/storage', () => ({
+  saveSession: vi.fn(),
   createSession: (payload) => {
     const buyInAmount = payload.buyInAmount ?? payload.amount;
     const chipsPerBuyIn = payload.chipsPerBuyIn ?? payload.chips;

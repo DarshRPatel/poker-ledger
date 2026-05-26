@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { getSessions, getLeaderboard, deleteSession } from '../services/storage';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../context/GameContext';
+import { useLiveSync } from '../hooks/useLiveSync';
 import Navbar from '../components/Navbar';
 import ConfirmModal from '../components/ConfirmModal';
 import './Home.css';
@@ -15,24 +16,28 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      try {
-        const [sessionsData, leaderboardData] = await Promise.all([
-          getSessions(),
-          getLeaderboard()
-        ]);
-        setSessions(sessionsData);
-        setLeaderboard(leaderboardData);
-      } catch (err) {
-        console.error('Failed to load ledger data:', err);
-      } finally {
-        setLoading(false);
-      }
+  const loadData = useCallback(async (options = {}) => {
+    if (!options.silent) setLoading(true);
+    try {
+      const [sessionsData, leaderboardData] = await Promise.all([
+        getSessions(),
+        getLeaderboard()
+      ]);
+      setSessions(sessionsData);
+      setLeaderboard(leaderboardData);
+    } catch (err) {
+      console.error('Failed to load ledger data:', err);
+    } finally {
+      if (!options.silent) setLoading(false);
     }
-    loadData();
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Realtime subscription updates
+  useLiveSync(['sessions'], () => loadData({ silent: true }));
 
   const copyLeagueLink = () => {
     if (!user) return;

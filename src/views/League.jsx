@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
+import { useLiveSync } from '../hooks/useLiveSync';
 import { supabase } from '../services/supabaseClient';
 import { getSessionsByHost, calculateLeaderboard } from '../services/storage';
 import Navbar from '../components/Navbar';
@@ -17,35 +18,39 @@ export default function League() {
   const [loading, setLoading] = useState(true);
   const [claimingName, setClaimingName] = useState('');
 
-  useEffect(() => {
-    async function loadLeagueData() {
-      setLoading(true);
-      try {
-        const hostSessions = await getSessionsByHost(hostId);
-        setSessions(hostSessions);
-        setLeaderboard(calculateLeaderboard(hostSessions));
+  const loadLeagueData = useCallback(async (options = {}) => {
+    if (!options.silent) setLoading(true);
+    try {
+      const hostSessions = await getSessionsByHost(hostId);
+      setSessions(hostSessions);
+      setLeaderboard(calculateLeaderboard(hostSessions));
 
-        // Fetch player claims for this league
-        const { data: claimsData } = await supabase
-          .from('player_claims')
-          .select('player_name, user_id')
-          .eq('host_id', hostId);
+      // Fetch player claims for this league
+      const { data: claimsData } = await supabase
+        .from('player_claims')
+        .select('player_name, user_id')
+        .eq('host_id', hostId);
 
-        const claimsMap = {};
-        if (claimsData) {
-          claimsData.forEach(c => {
-            claimsMap[c.player_name.toLowerCase()] = c.user_id;
-          });
-        }
-        setClaims(claimsMap);
-      } catch (err) {
-        console.error('Failed to load league data:', err);
-      } finally {
-        setLoading(false);
+      const claimsMap = {};
+      if (claimsData) {
+        claimsData.forEach(c => {
+          claimsMap[c.player_name.toLowerCase()] = c.user_id;
+        });
       }
+      setClaims(claimsMap);
+    } catch (err) {
+      console.error('Failed to load league data:', err);
+    } finally {
+      if (!options.silent) setLoading(false);
     }
-    loadLeagueData();
   }, [hostId]);
+
+  useEffect(() => {
+    loadLeagueData();
+  }, [loadLeagueData]);
+
+  // Realtime subscription updates
+  useLiveSync(['sessions', 'player_claims'], () => loadLeagueData({ silent: true }));
 
   const handleClaim = async (playerName) => {
     if (!user) {
