@@ -159,12 +159,12 @@ npm i -g vercel
 # Deploy (first time — links to your GitHub repo)
 vercel
 
-# Subsequent deploys happen automatically on every push to main
+# Subsequent deploys happen automatically on every push to p0
 ```
 
 - **Free tier:** Unlimited static sites, automatic HTTPS, global CDN
 - **Custom domain:** Add your own domain in the Vercel dashboard
-- **Auto-deploy:** Every push to `main` triggers a new deployment
+- **Auto-deploy:** Every push to `p0` triggers a new deployment
 - **URL:** You'll get something like `poker-ledger.vercel.app`
 
 ### Option 2: Netlify

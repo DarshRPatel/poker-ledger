@@ -179,6 +179,15 @@ npm test
 npx playwright test
 ```
 
+## Development & Deployment
+
+For detailed guidelines, branch conventions, and testing checklists, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+### Quick Summary:
+- **Production Branch:** `p0` (deploys automatically to Vercel).
+- **Feature Branches:** Always develop on descriptive branches cloned from `p0` (e.g. `feature/<feature-name>`).
+- **Deploying to Production:** Merge the feature branch into `p0` and push to remote *only* after all tests pass and when the user commands **"push to production"**.
+
 ## Design
 
 - **Theme:** Dark casino — deep blacks, gold accents, emerald green highlights
