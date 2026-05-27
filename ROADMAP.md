@@ -41,19 +41,6 @@ Features that significantly improve the app's usefulness and were explicitly def
 
 ---
 
-### 4. Export / Share Results
-
-**What:** Share a session's results summary via WhatsApp, clipboard, or as a screenshot/image.
-
-**Why:** After every poker night, someone asks "who owes what?" in the group chat. Being able to tap "Share" and send a clean summary to WhatsApp is the killer feature.
-
-**Approach:**
-- **Clipboard:** Format results as a clean text block and use `navigator.clipboard.writeText()`
-- **WhatsApp:** Use `https://wa.me/?text=...` deep link with URL-encoded summary
-- **Image:** Use `html2canvas` to screenshot the results section and share via Web Share API
-
----
-
 ### 5. Edit Completed Sessions
 
 **What:** Allow editing a saved session — fix a chip entry mistake, adjust a player's buy-in count, or correct the duration.
@@ -242,3 +229,7 @@ These are tasks that were originally identified as gaps or future plans but have
 ### 5. Cloud Database Migration (P1)
 *   **Status:** ✅ Completed in v1.2
 *   **Implementation:** Migrated persistent storage to Supabase (PostgreSQL) asynchronously in [storage.js](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/services/storage.js). Integrates a robust fallback mechanism that redirects queries to browser `localStorage` in automated E2E test environments or when offline.
+
+### 6. Export / Share Results (P1)
+*   **Status:** ✅ Completed in v1.3
+*   **Implementation:** Implemented plain-text copy-to-clipboard formatting, WhatsApp deep linking, mobile Web Share integration, and custom high-definition canvas snapshotting using `html2canvas` in [ShareModal.jsx](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/components/ShareModal.jsx).
