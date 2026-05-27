@@ -1,0 +1,119 @@
+.share-modal-content {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--sp-lg);
+  border: 1px solid var(--border-accent);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  position: relative;
+  text-align: left;
+}
+
+.share-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-md);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--sp-xs);
+}
+
+.share-modal-header h3 {
+  color: var(--accent);
+  margin: 0;
+}
+
+.share-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: var(--sp-xs);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.share-close-btn:hover {
+  color: var(--red-light);
+}
+
+.share-error-banner {
+  background: rgba(231, 76, 60, 0.15);
+  color: var(--red-light);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  font-size: 0.85rem;
+  margin-bottom: var(--sp-md);
+}
+
+.share-preview-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  margin-bottom: var(--sp-lg);
+}
+
+.share-preview-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.share-preview-text {
+  width: 100%;
+  padding: var(--sp-md);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  resize: none;
+  outline: none;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.share-preview-text::-webkit-scrollbar {
+  width: 4px;
+}
+.share-preview-text::-webkit-scrollbar-thumb {
+  background: var(--accent-dark);
+}
+
+.share-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-md);
+}
+
+.share-actions-grid .btn {
+  font-size: 0.9rem;
+  padding: var(--sp-md) var(--sp-sm);
+}
+
+.share-actions-grid .btn-primary {
+  grid-column: span 2;
+  margin-top: var(--sp-xs);
+}
+
+.btn-copied {
+  background: var(--accent-subtle) !important;
+  color: var(--accent-light) !important;
+  border-color: var(--accent) !important;
+}
+
+.btn-whatsapp:hover {
+  background: rgba(37, 211, 102, 0.1);
+  border-color: #25d366;
+  color: #25d366;
+}
+
+.btn-webshare:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}

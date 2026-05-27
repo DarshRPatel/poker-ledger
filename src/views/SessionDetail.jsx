@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSession } from '../services/storage';
 import { calculateSettlements } from '../utils/settlement';
 import { useLiveSync } from '../hooks/useLiveSync';
 import Navbar from '../components/Navbar';
+import ShareModal from '../components/ShareModal';
 import './SessionResults.css';
 
 export default function SessionDetail() {
@@ -11,6 +12,8 @@ export default function SessionDetail() {
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const shareAreaRef = useRef(null);
 
   const fetchSession = useCallback(async (options = {}) => {
     if (!options.silent) setLoading(true);
@@ -103,105 +106,124 @@ export default function SessionDetail() {
         onBack={hostId ? () => navigate(`/league/${hostId}`) : undefined} 
       />
       <div className="page">
-        {/* Header */}
-        <div className="results-header animate-fade-in-up">
-          <div className="results-session-num">Session #{session.sessionNumber}</div>
-          <h1>Game Summary</h1>
-          <p className="text-secondary" style={{ marginTop: '4px', fontSize: '0.85rem' }}>
-            {formatDate(session.startTime)}
-          </p>
-        </div>
+        <div ref={shareAreaRef} className="share-capture-area" style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <div className="results-header animate-fade-in-up">
+            <div className="results-session-num">Session #{session.sessionNumber}</div>
+            <h1>Game Summary</h1>
+            <p className="text-secondary" style={{ marginTop: '4px', fontSize: '0.85rem' }}>
+              {formatDate(session.startTime)}
+            </p>
+          </div>
 
-        {/* Stats */}
-        <div className="results-stats glass-card animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <div className="stat-item">
-            <div className="stat-value text-gold">₹{session.totalPotRS?.toLocaleString()}</div>
-            <div className="stat-label">Total Pot</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">{totalBuyIns}</div>
-            <div className="stat-label">Buy-ins</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">{session.players.length}</div>
-            <div className="stat-label">Players</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">{formatDuration(session.durationMinutes)}</div>
-            <div className="stat-label">Duration</div>
-          </div>
-        </div>
-
-        {/* Buy-in config */}
-        <div className="glass-card animate-fade-in-up" style={{ padding: 'var(--sp-md)', marginBottom: 'var(--sp-lg)', textAlign: 'center', animationDelay: '150ms' }}>
-          <span className="text-muted" style={{ fontSize: '0.8rem' }}>
-            ₹{session.buyInAmount} per buy-in · {session.chipsPerBuyIn} chips · ₹1 = {session.ratio} chips
-          </span>
-        </div>
-
-        {/* Leaderboard */}
-        <section className="results-section animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-          <h2 className="section-title">
-            <span className="suit-accent suit-spade">♠</span> Leaderboard
-          </h2>
-          <div className="results-leaderboard glass-card">
-            <div className="lb-header-row">
-              <span className="lb-col-rank">#</span>
-              <span className="lb-col-name">Player</span>
-              <span className="lb-col-in">In (₹)</span>
-              <span className="lb-col-out">Out (₹)</span>
-              <span className="lb-col-net">Net</span>
+          {/* Stats */}
+          <div className="results-stats glass-card animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="stat-item">
+              <div className="stat-value text-gold">₹{session.totalPotRS?.toLocaleString()}</div>
+              <div className="stat-label">Total Pot</div>
             </div>
-            {sortedPlayers.map((p, i) => {
-              const buyInRS = p.buyIns * session.buyInAmount;
-              const outRS = Math.round((p.remainingChips / session.ratio) * 100) / 100;
-              const net = p.netRS || 0;
-              return (
-                <div key={p.name} className={`lb-row ${i < 3 ? 'top-three' : ''}`}>
-                  <span className="lb-col-rank">
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-                  </span>
-                  <span className="lb-col-name">{p.name}</span>
-                  <span className="lb-col-in text-secondary">₹{buyInRS}</span>
-                  <span className="lb-col-out">₹{outRS}</span>
-                  <span className={`lb-col-net ${net >= 0 ? 'profit' : 'loss'}`}>
-                    {net >= 0 ? '+' : ''}₹{Math.round(net)}
-                  </span>
-                </div>
-              );
-            })}
+            <div className="stat-item">
+              <div className="stat-value">{totalBuyIns}</div>
+              <div className="stat-label">Buy-ins</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-value">{session.players.length}</div>
+              <div className="stat-label">Players</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-value">{formatDuration(session.durationMinutes)}</div>
+              <div className="stat-label">Duration</div>
+            </div>
           </div>
-        </section>
 
-        {/* Settlements */}
-        {settlements.length > 0 && (
-          <section className="results-section animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          {/* Buy-in config */}
+          <div className="glass-card animate-fade-in-up" style={{ padding: 'var(--sp-md)', marginBottom: 'var(--sp-lg)', textAlign: 'center', animationDelay: '150ms' }}>
+            <span className="text-muted" style={{ fontSize: '0.8rem' }}>
+              ₹{session.buyInAmount} per buy-in · {session.chipsPerBuyIn} chips · ₹1 = {session.ratio} chips
+            </span>
+          </div>
+
+          {/* Leaderboard */}
+          <section className="results-section animate-fade-in-up" style={{ animationDelay: '200ms' }}>
             <h2 className="section-title">
-              <span className="suit-accent suit-heart">♥</span> Settlements
+              <span className="suit-accent suit-spade">♠</span> Leaderboard
             </h2>
-            <div className="settlements stagger-children">
-              {settlements.map((s, i) => (
-                <div key={i} className="settlement-card glass-card">
-                  <div className="settlement-from">{s.from}</div>
-                  <div className="settlement-arrow">
-                    <span className="arrow-line" />
-                    <span className="settlement-amount">₹{s.amount}</span>
-                    <span className="arrow-head">→</span>
+            <div className="results-leaderboard glass-card">
+              <div className="lb-header-row">
+                <span className="lb-col-rank">#</span>
+                <span className="lb-col-name">Player</span>
+                <span className="lb-col-in">In (₹)</span>
+                <span className="lb-col-out">Out (₹)</span>
+                <span className="lb-col-net">Net</span>
+              </div>
+              {sortedPlayers.map((p, i) => {
+                const buyInRS = p.buyIns * session.buyInAmount;
+                const outRS = Math.round((p.remainingChips / session.ratio) * 100) / 100;
+                const net = p.netRS || 0;
+                return (
+                  <div key={p.name} className={`lb-row ${i < 3 ? 'top-three' : ''}`}>
+                    <span className="lb-col-rank">
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                    </span>
+                    <span className="lb-col-name">{p.name}</span>
+                    <span className="lb-col-in text-secondary">₹{buyInRS}</span>
+                    <span className="lb-col-out">₹{outRS}</span>
+                    <span className={`lb-col-net ${net >= 0 ? 'profit' : 'loss'}`}>
+                      {net >= 0 ? '+' : ''}₹{Math.round(net)}
+                    </span>
                   </div>
-                  <div className="settlement-to">{s.to}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
-        )}
 
-        <button
-          className="btn btn-secondary btn-full mt-lg"
-          onClick={() => navigate(hostId ? `/league/${hostId}` : '/')}
-        >
-          {hostId ? '← Back to League' : '← Back to Home'}
-        </button>
+          {/* Settlements */}
+          {settlements.length > 0 && (
+            <section className="results-section animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+              <h2 className="section-title">
+                <span className="suit-accent suit-heart">♥</span> Settlements
+              </h2>
+              <div className="settlements stagger-children">
+                {settlements.map((s, i) => (
+                  <div key={i} className="settlement-card glass-card">
+                    <div className="settlement-from">{s.from}</div>
+                    <div className="settlement-arrow">
+                      <span className="arrow-line" />
+                      <span className="settlement-amount">₹{s.amount}</span>
+                      <span className="arrow-head">→</span>
+                    </div>
+                    <div className="settlement-to">{s.to}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+
+        <div className="results-actions" data-html2canvas-ignore="true">
+          <button
+            className="btn btn-secondary btn-full"
+            onClick={() => setShareModalOpen(true)}
+            id="btn-share-results"
+          >
+            🔗 Share Results
+          </button>
+          <button
+            className="btn btn-secondary btn-full"
+            onClick={() => navigate(hostId ? `/league/${hostId}` : '/')}
+            id="btn-back-nav"
+          >
+            {hostId ? '← Back to League' : '← Back to Home'}
+          </button>
+        </div>
       </div>
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        session={session}
+        settlements={settlements}
+        captureRef={shareAreaRef}
+      />
     </>
   );
 }

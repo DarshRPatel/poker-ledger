@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import { saveSession } from '../services/storage';
 import { calculateSettlements } from '../utils/settlement';
 import Navbar from '../components/Navbar';
+import ShareModal from '../components/ShareModal';
 import './SessionResults.css';
 
 // Duration presets in minutes
@@ -28,6 +29,8 @@ export default function SessionResults() {
   const [customDuration, setCustomDuration] = useState(false);
   const [customHrs, setCustomHrs] = useState('');
   const [customMins, setCustomMins] = useState('');
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const shareAreaRef = useRef(null);
 
   if (!session) {
     navigate('/');
@@ -115,149 +118,151 @@ export default function SessionResults() {
     <>
       <Navbar title="Results" showBack={false} />
       <div className="page">
-        {/* Header */}
-        <div className="results-header animate-fade-in-up">
-          <div className="results-session-num">Session #{session.sessionNumber}</div>
-          <h1>Game Summary</h1>
-        </div>
+        <div ref={shareAreaRef} className="share-capture-area" style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <div className="results-header animate-fade-in-up">
+            <div className="results-session-num">Session #{session.sessionNumber}</div>
+            <h1>Game Summary</h1>
+          </div>
 
-        {/* Stats Grid */}
-        <div className="results-stats glass-card animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <div className="stat-item">
-            <div className="stat-value text-accent">₹{session.totalPotRS?.toLocaleString()}</div>
-            <div className="stat-label">Total Pot</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">{totalBuyIns}</div>
-            <div className="stat-label">Buy-ins</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">{session.players.length}</div>
-            <div className="stat-label">Players</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">{formatDuration(session.durationMinutes)}</div>
-            <div className="stat-label">Duration</div>
-          </div>
-        </div>
-
-        {/* Duration Editor — Dropdown + Custom */}
-        <div className="duration-editor animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-          <label className="duration-label">Adjust Duration</label>
-          <select
-            className="select"
-            value={selectValue}
-            onChange={handleDurationSelect}
-            id="select-duration"
-          >
-            {DURATION_PRESETS.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.label}
-              </option>
-            ))}
-            <option value="custom">Custom...</option>
-          </select>
-
-          {/* Custom duration input */}
-          {customDuration && (
-            <div className="custom-duration animate-fade-in">
-              <div className="custom-duration-inputs">
-                <div className="input-group">
-                  <label>Hours</label>
-                  <input
-                    className="input"
-                    type="number"
-                    placeholder="0"
-                    min="0"
-                    max="24"
-                    value={customHrs}
-                    onChange={(e) => setCustomHrs(e.target.value)}
-                    id="input-custom-hrs"
-                  />
-                </div>
-                <div className="input-group">
-                  <label>Minutes</label>
-                  <input
-                    className="input"
-                    type="number"
-                    placeholder="0"
-                    min="0"
-                    max="59"
-                    value={customMins}
-                    onChange={(e) => setCustomMins(e.target.value)}
-                    id="input-custom-mins"
-                  />
-                </div>
-                <button
-                  className="btn btn-primary btn-sm custom-apply-btn"
-                  onClick={handleCustomDurationApply}
-                  disabled={!customHrs && !customMins}
-                >
-                  Apply
-                </button>
-              </div>
+          {/* Stats Grid */}
+          <div className="results-stats glass-card animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="stat-item">
+              <div className="stat-value text-accent">₹{session.totalPotRS?.toLocaleString()}</div>
+              <div className="stat-label">Total Pot</div>
             </div>
+            <div className="stat-item">
+              <div className="stat-value">{totalBuyIns}</div>
+              <div className="stat-label">Buy-ins</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-value">{session.players.length}</div>
+              <div className="stat-label">Players</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-value">{formatDuration(session.durationMinutes)}</div>
+              <div className="stat-label">Duration</div>
+            </div>
+          </div>
+
+          {/* Duration Editor — Dropdown + Custom */}
+          <div className="duration-editor animate-fade-in-up" style={{ animationDelay: '150ms' }} data-html2canvas-ignore="true">
+            <label className="duration-label">Adjust Duration</label>
+            <select
+              className="select"
+              value={selectValue}
+              onChange={handleDurationSelect}
+              id="select-duration"
+            >
+              {DURATION_PRESETS.map((d) => (
+                <option key={d.value} value={d.value}>
+                  {d.label}
+                </option>
+              ))}
+              <option value="custom">Custom...</option>
+            </select>
+
+            {/* Custom duration input */}
+            {customDuration && (
+              <div className="custom-duration animate-fade-in">
+                <div className="custom-duration-inputs">
+                  <div className="input-group">
+                    <label>Hours</label>
+                    <input
+                      className="input"
+                      type="number"
+                      placeholder="0"
+                      min="0"
+                      max="24"
+                      value={customHrs}
+                      onChange={(e) => setCustomHrs(e.target.value)}
+                      id="input-custom-hrs"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Minutes</label>
+                    <input
+                      className="input"
+                      type="number"
+                      placeholder="0"
+                      min="0"
+                      max="59"
+                      value={customMins}
+                      onChange={(e) => setCustomMins(e.target.value)}
+                      id="input-custom-mins"
+                    />
+                  </div>
+                  <button
+                    className="btn btn-primary btn-sm custom-apply-btn"
+                    onClick={handleCustomDurationApply}
+                    disabled={!customHrs && !customMins}
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Leaderboard */}
+          <section className="results-section animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            <h2 className="section-title">
+              <span className="suit-accent suit-spade">♠</span> Leaderboard
+            </h2>
+            <div className="results-leaderboard glass-card">
+              <div className="lb-header-row">
+                <span className="lb-col-rank">#</span>
+                <span className="lb-col-name">Player</span>
+                <span className="lb-col-in">In (₹)</span>
+                <span className="lb-col-out">Out (₹)</span>
+                <span className="lb-col-net">Net</span>
+              </div>
+              {sortedPlayers.map((p, i) => {
+                const buyInRS = p.buyIns * session.buyInAmount;
+                const outRS = Math.round((p.remainingChips / session.ratio) * 100) / 100;
+                const net = p.netRS || 0;
+                return (
+                  <div key={p.name} className={`lb-row ${i < 3 ? 'top-three' : ''}`}>
+                    <span className="lb-col-rank">
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                    </span>
+                    <span className="lb-col-name">{p.name}</span>
+                    <span className="lb-col-in text-secondary">₹{buyInRS}</span>
+                    <span className="lb-col-out">₹{outRS}</span>
+                    <span className={`lb-col-net ${net >= 0 ? 'profit' : 'loss'}`}>
+                      {net >= 0 ? '+' : '-'}₹{Math.abs(Math.round(net))}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Settlements */}
+          {settlements.length > 0 && (
+            <section className="results-section animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+              <h2 className="section-title">
+                <span className="suit-accent suit-heart">♥</span> Settlements
+              </h2>
+              <div className="settlements stagger-children">
+                {settlements.map((s, i) => (
+                  <div key={i} className="settlement-card glass-card">
+                    <div className="settlement-from">{s.from}</div>
+                    <div className="settlement-arrow">
+                      <span className="arrow-line" />
+                      <span className="settlement-amount">₹{s.amount}</span>
+                      <span className="arrow-head">→</span>
+                    </div>
+                    <div className="settlement-to">{s.to}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
         </div>
 
-        {/* Leaderboard */}
-        <section className="results-section animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-          <h2 className="section-title">
-            <span className="suit-accent suit-spade">♠</span> Leaderboard
-          </h2>
-          <div className="results-leaderboard glass-card">
-            <div className="lb-header-row">
-              <span className="lb-col-rank">#</span>
-              <span className="lb-col-name">Player</span>
-              <span className="lb-col-in">In (₹)</span>
-              <span className="lb-col-out">Out (₹)</span>
-              <span className="lb-col-net">Net</span>
-            </div>
-            {sortedPlayers.map((p, i) => {
-              const buyInRS = p.buyIns * session.buyInAmount;
-              const outRS = Math.round((p.remainingChips / session.ratio) * 100) / 100;
-              const net = p.netRS || 0;
-              return (
-                <div key={p.name} className={`lb-row ${i < 3 ? 'top-three' : ''}`}>
-                  <span className="lb-col-rank">
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-                  </span>
-                  <span className="lb-col-name">{p.name}</span>
-                  <span className="lb-col-in text-secondary">₹{buyInRS}</span>
-                  <span className="lb-col-out">₹{outRS}</span>
-                  <span className={`lb-col-net ${net >= 0 ? 'profit' : 'loss'}`}>
-                    {net >= 0 ? '+' : '-'}₹{Math.abs(Math.round(net))}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Settlements */}
-        {settlements.length > 0 && (
-          <section className="results-section animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-            <h2 className="section-title">
-              <span className="suit-accent suit-heart">♥</span> Settlements
-            </h2>
-            <div className="settlements stagger-children">
-              {settlements.map((s, i) => (
-                <div key={i} className="settlement-card glass-card">
-                  <div className="settlement-from">{s.from}</div>
-                  <div className="settlement-arrow">
-                    <span className="arrow-line" />
-                    <span className="settlement-amount">₹{s.amount}</span>
-                    <span className="arrow-head">→</span>
-                  </div>
-                  <div className="settlement-to">{s.to}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Action Buttons */}
-        <div className="results-actions">
+        <div className="results-actions" data-html2canvas-ignore="true">
           <button
             className="btn btn-secondary btn-lg btn-full"
             onClick={handleBackToGame}
@@ -265,6 +270,13 @@ export default function SessionResults() {
             id="btn-back-to-game"
           >
             ← Back to Game
+          </button>
+          <button
+            className="btn btn-secondary btn-lg btn-full"
+            onClick={() => setShareModalOpen(true)}
+            id="btn-share-results"
+          >
+            🔗 Share Results
           </button>
           <button
             className={`btn btn-lg btn-full ${saved ? 'btn-saved' : 'btn-primary'}`}
@@ -276,6 +288,13 @@ export default function SessionResults() {
           </button>
         </div>
       </div>
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        session={session}
+        settlements={settlements}
+        captureRef={shareAreaRef}
+      />
     </>
   );
 }
