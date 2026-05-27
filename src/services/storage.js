@@ -77,6 +77,7 @@ function mapSessionFromDb(db) {
     players: db.players || [],
     totalPotChips: (db.players || []).reduce((sum, p) => sum + (p.totalChips || 0), 0),
     totalPotRS: (db.players || []).reduce((sum, p) => sum + (p.buyIns || 0), 0) * buyInAmount,
+    hostId: db.host_id,
   };
 }
 
@@ -92,6 +93,7 @@ function mapSessionToDb(s) {
     ratio: s.ratio,
     status: s.status,
     players: s.players,
+    host_id: s.hostId,
   };
 }
 
@@ -163,7 +165,7 @@ export async function saveSession(session) {
 
       const dbRow = {
         ...mapSessionToDb(session),
-        host_id: hostId
+        host_id: session.hostId || hostId
       };
 
       const { error } = await supabase

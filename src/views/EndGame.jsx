@@ -12,7 +12,11 @@ export default function EndGame() {
     () => {
       if (!session) return [];
       return session.players.map((p) =>
-        p.exitChips != null ? String(p.exitChips) : ''
+        p.remainingChips != null
+          ? String(p.remainingChips)
+          : p.exitChips != null
+          ? String(p.exitChips)
+          : ''
       );
     }
   );
@@ -21,7 +25,9 @@ export default function EndGame() {
   useEffect(() => {
     if (!session) return;
     session.players.forEach((p, i) => {
-      if (p.exitChips != null) {
+      if (p.remainingChips != null) {
+        setRemainingChips(i, p.remainingChips);
+      } else if (p.exitChips != null) {
         setRemainingChips(i, p.exitChips);
       }
     });

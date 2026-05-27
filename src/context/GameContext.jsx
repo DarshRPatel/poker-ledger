@@ -7,6 +7,7 @@ const GameContext = createContext(null);
 const initialState = {
   session: null,
   step: 'setup', // setup → players → summary → active → endgame → results
+  isEditing: false,
 };
 
 function gameReducer(state, action) {
@@ -21,7 +22,7 @@ function gameReducer(state, action) {
 
     case 'SET_STEP': {
       // When going back to active game from results, revert session status
-      if (action.payload === 'active' && state.session?.status === 'completed') {
+      if (action.payload === 'active' && state.session?.status === 'completed' && !state.isEditing) {
         const players = state.session.players.map(p => ({
           ...p,
           remainingChips: null,
@@ -175,10 +176,10 @@ function gameReducer(state, action) {
 
     case 'CALCULATE_RESULTS': {
       const s = state.session;
-      const endTime = new Date().toISOString();
+      const endTime = s.endTime || new Date().toISOString();
       const startMs = new Date(s.startTime).getTime();
       const endMs = new Date(endTime).getTime();
-      const durationMinutes = Math.round((endMs - startMs) / 60000);
+      const durationMinutes = s.durationMinutes || Math.round((endMs - startMs) / 60000);
 
       const players = s.players.map(p => {
         const outRS = p.remainingChips / s.ratio;
@@ -213,10 +214,12 @@ function gameReducer(state, action) {
     }
 
     case 'LOAD_SESSION': {
+      const isEditing = action.payload.session?.status === 'completed';
       return {
         ...state,
         session: action.payload.session,
         step: action.payload.step || 'active',
+        isEditing,
       };
     }
 
@@ -241,10 +244,10 @@ export function GameProvider({ children }) {
 
   // Auto-save active sessions to Supabase on state change (real-time sync provider)
   useEffect(() => {
-    if (state.session && user) {
+    if (state.session && !state.isEditing && user) {
       saveSession(state.session);
     }
-  }, [state.session, user]);
+  }, [state.session, state.isEditing, user]);
 
   useEffect(() => {
     // Get active session on mount

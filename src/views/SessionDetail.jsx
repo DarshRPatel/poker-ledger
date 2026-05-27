@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getSession } from '../services/storage';
 import { calculateSettlements } from '../utils/settlement';
 import { useLiveSync } from '../hooks/useLiveSync';
+import { useGame } from '../context/GameContext';
 import Navbar from '../components/Navbar';
 import ShareModal from '../components/ShareModal';
 import './SessionResults.css';
@@ -10,10 +11,18 @@ import './SessionResults.css';
 export default function SessionDetail() {
   const { id, hostId } = useParams();
   const navigate = useNavigate();
+  const { user, loadSession } = useGame();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const shareAreaRef = useRef(null);
+
+  const handleEdit = () => {
+    if (!session) return;
+    // Load session in 'endgame' step and navigate
+    loadSession(session, 'endgame');
+    navigate('/endgame');
+  };
 
   const fetchSession = useCallback(async (options = {}) => {
     if (!options.silent) setLoading(true);
@@ -97,6 +106,8 @@ export default function SessionDetail() {
       minute: '2-digit',
     });
   };
+
+  const isEditable = session && (!session.hostId || (user && user.id === session.hostId));
 
   return (
     <>
@@ -201,6 +212,15 @@ export default function SessionDetail() {
         </div>
 
         <div className="results-actions" data-html2canvas-ignore="true">
+          {isEditable && (
+            <button
+              className="btn btn-secondary btn-full"
+              onClick={handleEdit}
+              id="btn-edit-session"
+            >
+              ✏️ Edit Session
+            </button>
+          )}
           <button
             className="btn btn-secondary btn-full"
             onClick={() => setShareModalOpen(true)}

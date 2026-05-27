@@ -27,8 +27,14 @@ export default function ActiveGame() {
     if (!session) return;
     const tick = () => {
       const start = new Date(session.startTime).getTime();
-      const now = Date.now();
-      const diffMs = now - start;
+      let diffMs;
+      if (session.endTime) {
+        diffMs = session.durationMinutes
+          ? session.durationMinutes * 60000
+          : new Date(session.endTime).getTime() - start;
+      } else {
+        diffMs = Date.now() - start;
+      }
       const h = Math.floor(diffMs / 3600000);
       const m = Math.floor((diffMs % 3600000) / 60000);
       const s = Math.floor((diffMs % 60000) / 1000);
@@ -37,8 +43,10 @@ export default function ActiveGame() {
       );
     };
     tick();
-    const timer = setInterval(tick, 1000);
-    return () => clearInterval(timer);
+    if (!session.endTime) {
+      const timer = setInterval(tick, 1000);
+      return () => clearInterval(timer);
+    }
   }, [session]);
 
   // Load persisted exit chips on mount
