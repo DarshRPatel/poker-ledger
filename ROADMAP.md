@@ -19,38 +19,6 @@ Features that significantly improve the app's usefulness and were explicitly def
 
 
 
-### 2. Multi-Device Sync
-
-**What:** Allow multiple phones at the poker table to view and update the same game session in real-time.
-
-**Why:** Currently only the host's phone tracks the game. If everyone could see the pot, their buy-ins, and the final results on their own device, it's a much better experience.
-
-**Approach:** Use Supabase Realtime subscriptions or Firebase Realtime Database. One user "hosts" the session, others join via a code or link. State changes broadcast to all connected clients.
-
-**Depends on:** Cloud Database (#1 above)
-
----
-
-### 3. Player Roster & Autocomplete
-
-**What:** Remember player names across sessions. When adding a player, show suggestions from previously used names.
-
-**Why:** The same group of friends plays every week. Typing "Darsh", "Raj", "Amit" every single time is tedious and error-prone (typos create duplicate leaderboard entries).
-
-**Approach:** Maintain a `players` collection in storage (or DB). On the PlayerEntry screen, show a dropdown/autocomplete as the user types. Allow creating new names that get added to the roster.
-
----
-
-### 5. Edit Completed Sessions
-
-**What:** Allow editing a saved session — fix a chip entry mistake, adjust a player's buy-in count, or correct the duration.
-
-**Why:** Mistakes happen. If someone entered 1500 chips instead of 150, the entire P&L and settlement is wrong. Currently the only fix is to delete the session and recreate it from scratch.
-
-**Approach:** Add an "Edit" button on the SessionDetail view. Re-open the results in editable mode, recalculate on save.
-
----
-
 ### 6. Additional E2E Test Coverage
 
 **What:** Implement the two remaining CUJs from the testing plan:
@@ -174,13 +142,13 @@ The goal is to provide a secure, personalized experience for hosts and players w
 *   **Cons**: Stats are hosted under a specific organizer's account and cannot be easily viewed in one centralized spot if players play across multiple hosts (resolved in Phase 2).
 
 #### Implementation Tasks:
-- [ ] **Database & RLS Setup**: Add `host_id` uuid references `auth.users(id)` to `sessions` table. Create `rosters` table (`id`, `host_id`, `name`, `created_at`) with unique `(host_id, name)`. Enable RLS with read-only public access and write access gated by `auth.uid() = host_id`.
-- [ ] **Auth Listener Integration**: Integrate Supabase Auth listener state (`user`, `authLoading`) in `GameContext` and expose `signOut` helper.
-- [ ] **Host Login Screen (`/login`)**: Create passwordless Email Magic Link authentication screen.
-- [ ] **Roster Management Screen (`/roster`)**: Create management view for hosts to add/remove player names.
-- [ ] **Autocomplete Roster Suggestions**: Connect roster names to the `PlayerEntry` setup page for name autocompletion.
-- [ ] **Scoping Sessions**: Update session saving logic (`saveSession` in `storage.js`) to capture the logged-in host's ID.
-- [ ] **Public Standings Dashboard (`/league/:host_id`)**: Query and display host-specific standings, match history, and session details (`/league/:host_id/session/:session_id`) without requiring user sign-in.
+- [x] **Database & RLS Setup**: Add `host_id` uuid references `auth.users(id)` to `sessions` table. Create `rosters` table (`id`, `host_id`, `name`, `created_at`) with unique `(host_id, name)`. Enable RLS with read-only public access and write access gated by `auth.uid() = host_id`.
+- [x] **Auth Listener Integration**: Integrate Supabase Auth listener state (`user`, `authLoading`) in `GameContext` and expose `signOut` helper.
+- [x] **Host Login Screen (`/login`)**: Create passwordless Email Magic Link authentication screen.
+- [x] **Roster Management Screen (`/roster`)**: Create management view for hosts to add/remove player names.
+- [x] **Autocomplete Roster Suggestions**: Connect roster names to the `PlayerEntry` setup page for name autocompletion.
+- [x] **Scoping Sessions**: Update session saving logic (`saveSession` in `storage.js`) to capture the logged-in host's ID.
+- [x] **Public Standings Dashboard (`/league/:host_id`)**: Query and display host-specific standings, match history, and session details (`/league/:host_id/session/:session_id`) without requiring user sign-in.
 
 ### Phase 2: Player Profile Claiming (Full Identity)
 
@@ -191,11 +159,11 @@ The goal is to provide a secure, personalized experience for hosts and players w
 *   **Cons**: Requires a mapping logic to link historical names to verified user accounts.
 
 #### Implementation Tasks:
-- [ ] **Database Setup**: Create `player_claims` table (`id`, `user_id` unique, `host_id`, `player_name`, `status`, `created_at`). Enable RLS allowing users to claim and hosts to view/approve.
-- [ ] **Leaderboard Claim Button**: Add "Claim Profile" badge/button next to names on `/league/:host_id` standings.
-- [ ] **Claim Processing & Linking**: Direct player to register/sign-in and record a claim to map `auth.uid()` to the host's roster player name.
-- [ ] **Unified Player Dashboard (`/dashboard`)**: Create dashboard view consolidating historical player stats (win rate, total buy-in, net P&L, streaks) across all hosts they've played with.
-- [ ] **Interactive P&L Chart**: Build a line graph of cumulative net profit over time using a lightweight chart library.
+- [x] **Database Setup**: Create `player_claims` table (`id`, `user_id` unique, `host_id`, `player_name`, `status`, `created_at`). Enable RLS allowing users to claim and hosts to view/approve.
+- [x] **Leaderboard Claim Button**: Add "Claim Profile" badge/button next to names on `/league/:host_id` standings.
+- [x] **Claim Processing & Linking**: Direct player to register/sign-in and record a claim to map `auth.uid()` to the host's roster player name.
+- [x] **Unified Player Dashboard (`/dashboard`)**: Create dashboard view consolidating historical player stats (win rate, total buy-in, net P&L, streaks) across all hosts they've played with.
+- [x] **Interactive P&L Chart**: Build a line graph of cumulative net profit over time using a lightweight chart library.
 
 ### Recommended Path
 
@@ -233,3 +201,19 @@ These are tasks that were originally identified as gaps or future plans but have
 ### 6. Export / Share Results (P1)
 *   **Status:** ✅ Completed in v1.3
 *   **Implementation:** Implemented plain-text copy-to-clipboard formatting, WhatsApp deep linking, mobile Web Share integration, and custom high-definition canvas snapshotting using `html2canvas` in [ShareModal.jsx](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/components/ShareModal.jsx).
+
+### 7. Host Authentication, Roster, Public Standing Dashboard & Autocomplete (P1)
+*   **Status:** ✅ Completed in v1.2
+*   **Implementation:** Integrated passwordless Email Magic Link Supabase auth, scoped player rosters with autocomplete suggestions in [PlayerEntry.jsx](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/views/PlayerEntry.jsx), and public standings view `/league/:hostId`.
+
+### 8. Player Profile Claiming, Unified Dashboards & Charts (P1)
+*   **Status:** ✅ Completed in v1.2
+*   **Implementation:** Implemented `player_claims` routing, and a unified performance dashboard at `/dashboard` displaying win rates, streaks, and cumulative P&L line graph via custom SVG drawings.
+
+### 9. Multi-Device Realtime Live Sync (P1)
+*   **Status:** ✅ Completed in v1.2
+*   **Implementation:** Created custom realtime listener hook [useLiveSync.js](file:///Users/darshpatel/Desktop/Darsh/Projects/poker-ledger/src/hooks/useLiveSync.js) that silently reloads session states upon Supabase broadcast notifications.
+
+### 10. Edit Completed Sessions (P1)
+*   **Status:** ✅ Completed in v1.3
+*   **Implementation:** Enabled editing completed sessions by loading state back into the `GameContext` under `'endgame'` step, resolving auto-save isolation with `isEditing` state flags, and formatting elapsed game timers statically.
